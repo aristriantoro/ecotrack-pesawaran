@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Data Pengguna — EcoTrack Kab. Pesawaran</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap">
+  <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+
+  <div id="simBannerContainer"></div>
+
+  <div class="dashboard-wrapper">
+    <aside class="sidebar"></aside>
+
+    <div class="main-content">
+      <header class="topbar"></header>
+
+      <main class="content-body">
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-4">
+          <div>
+            <h4 class="fw-bold text-dark mb-1">Manajemen Pengguna Simulasi</h4>
+            <p class="text-muted small mb-0">Kelola akun petugas armada kebersihan DLH dan data masyarakat terdaftar di Kab. Pesawaran.</p>
+          </div>
+          <button type="button" class="btn btn-primary-eco btn-sm" onclick="openAddOfficerModal()">
+            <i class="bi bi-person-plus-fill me-1"></i> Tambah Petugas Baru
+          </button>
+        </div>
+
+        <!-- Nav Tabs -->
+        <ul class="nav nav-pills mb-4" id="userRoleTabs">
+          <li class="nav-item">
+            <button class="nav-link active fw-semibold" id="tabOfficersBtn" onclick="switchTab('officer')">
+              <i class="bi bi-truck me-1"></i> Petugas Kebersihan (<span id="officerCount">0</span>)
+            </button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link fw-semibold" id="tabCitizensBtn" onclick="switchTab('citizen')">
+              <i class="bi bi-people me-1"></i> Masyarakat Terdaftar (<span id="citizenCount">0</span>)
+            </button>
+          </li>
+        </ul>
+
+        <!-- Users Table Card -->
+        <div class="card border-0 shadow-sm rounded-4 overflow-hidden bg-white">
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+              <thead class="table-light">
+                <tr class="small text-muted text-uppercase" id="userTableHeaders">
+                  <!-- Headers changed based on tab -->
+                </tr>
+              </thead>
+              <tbody id="usersTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- Add/Edit Officer Modal -->
+  <div class="modal fade" id="officerModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content border-0 shadow">
+        <div class="modal-header border-bottom">
+          <h5 class="modal-title fw-bold text-dark" id="officerModalTitle">Tambah Petugas Kebersihan</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body p-4">
+          <form id="officerForm" onsubmit="handleSaveOfficer(event)">
+            <input type="hidden" id="editOfficerId">
+            <div class="mb-3">
+              <label class="form-label small fw-semibold text-dark">Nama Lengkap Petugas <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" id="formOfficerName" required placeholder="Contoh: Samsul Arifin">
+            </div>
+            <div class="mb-3">
+              <label class="form-label small fw-semibold text-dark">Email Login <span class="text-danger">*</span></label>
+              <input type="email" class="form-control" id="formOfficerEmail" required placeholder="petugas@ecotrack.demo">
+            </div>
+            <div class="mb-3">
+              <label class="form-label small fw-semibold text-dark">Nomor Telepon / WhatsApp <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" id="formOfficerPhone" required placeholder="08xxxxxxxxxx">
+            </div>
+            <div class="mb-3">
+              <label class="form-label small fw-semibold text-dark">Kendaraan / Armada</label>
+              <input type="text" class="form-control" id="formOfficerVehicle" placeholder="Contoh: Truk Sampah No. 04">
+            </div>
+            <div class="mb-4">
+              <label class="form-label small fw-semibold text-dark">Wilayah Zonasi Tugas</label>
+              <input type="text" class="form-control" id="formOfficerZone" placeholder="Contoh: Kecamatan Gedong Tataan & Way Lima">
+            </div>
+            <div class="d-flex justify-content-end gap-2">
+              <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+              <button type="submit" class="btn btn-primary-eco">Simpan Petugas</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="../assets/js/data-seed.js"></script>
+  <script src="../assets/js/storage.js"></script>
+  <script src="../assets/js/auth.js"></script>
+  <script src="../assets/js/app.js"></script>
+
+  <script>
+    const user = Auth.requireAuth(['admin'], 1);
+    let activeRoleTab = 'officer';
+
+    if (user) {
+      App.renderSimulationBanner();
+      App.renderSidebar('admin', 'users');
+      App.renderTopbar('Data Pengguna', [
+        { label: 'EcoTrack', href: '../index.html' },
+        { label: 'Admin', href: 'dashboard.html' },
+        { label: 'Data Pengguna' }
+      ]);
+
+      renderUserTables();
+    }
+
+    function switchTab(role) {
+      activeRoleTab = role;
+      document.getElementById('tabOfficersBtn').classList.toggle('active', role === 'officer');
+      document.getElementById('tabCitizensBtn').classList.toggle('active', role === 'citizen');
+      renderUserTables();
+    }
+
+    function renderUserTables() {
+      const officers = StorageManager.getOfficers();
+      const citizens = StorageManager.getCitizens();
+
+      document.getElementById('officerCount').textContent = officers.length;
+      document.getElementById('citizenCount').textContent = citizens.length;
+
+      const thead = document.getElementById('userTableHeaders');
+      const tbody = document.getElementById('usersTableBody');
+
+      if (activeRoleTab === 'officer') {
+        thead.innerHTML = `
+          <th class="ps-4">Nama Petugas</th>
+          <th>Email</th>
+          <th>Kontak</th>
+          <th>Armada Kendaraan</th>
+          <th>Zonasi Wilayah</th>
+          <th class="text-end pe-4">Aksi</th>
+        `;
+        tbody.innerHTML = officers.map(o => `
+          <tr>
+            <td class="ps-4">
+              <div class="fw-bold text-dark">${App.escapeHtml(o.name)}</div>
+              <small class="text-muted">ID: ${o.id}</small>
+            </td>
+            <td><code>${App.escapeHtml(o.email)}</code></td>
+            <td>${App.escapeHtml(o.phone || '-')}</td>
+            <td><span class="badge bg-light text-dark border">${App.escapeHtml(o.vehicle || 'Truk DLH')}</span></td>
+            <td class="small text-dark">${App.escapeHtml(o.zone || '-')}</td>
+            <td class="text-end pe-4">
+              <button class="btn btn-sm btn-outline-secondary me-1" onclick="openEditOfficer('${o.id}')" title="Edit Data"><i class="bi bi-pencil"></i></button>
+              <button class="btn btn-sm btn-outline-danger" onclick="deleteUserPrompt('${o.id}')" title="Hapus"><i class="bi bi-trash"></i></button>
+            </td>
+          </tr>
+        `).join('');
+      } else {
+        thead.innerHTML = `
+          <th class="ps-4">Nama Warga</th>
+          <th>Email</th>
+          <th>No WhatsApp</th>
+          <th>Alamat Domisili</th>
+          <th>Tanggal Daftar</th>
+          <th class="text-end pe-4">Aksi</th>
+        `;
+        tbody.innerHTML = citizens.map(c => `
+          <tr>
+            <td class="ps-4">
+              <div class="fw-bold text-dark">${App.escapeHtml(c.name)}</div>
+              <small class="text-muted">ID: ${c.id}</small>
+            </td>
+            <td><code>${App.escapeHtml(c.email)}</code></td>
+            <td>${App.escapeHtml(c.phone || '-')}</td>
+            <td class="small text-muted text-truncate" style="max-width: 250px;">${App.escapeHtml(c.address || '-')}</td>
+            <td class="small text-muted">${App.formatDate(c.created_at)}</td>
+            <td class="text-end pe-4">
+              <button class="btn btn-sm btn-outline-danger" onclick="deleteUserPrompt('${c.id}')" title="Hapus"><i class="bi bi-trash"></i></button>
+            </td>
+          </tr>
+        `).join('');
+      }
+    }
+
+    function openAddOfficerModal() {
+      document.getElementById('editOfficerId').value = '';
+      document.getElementById('officerModalTitle').textContent = 'Tambah Petugas Kebersihan Baru';
+      document.getElementById('formOfficerName').value = '';
+      document.getElementById('formOfficerEmail').value = '';
+      document.getElementById('formOfficerPhone').value = '';
+      document.getElementById('formOfficerVehicle').value = '';
+      document.getElementById('formOfficerZone').value = '';
+      new bootstrap.Modal(document.getElementById('officerModal')).show();
+    }
+
+    function openEditOfficer(id) {
+      const o = StorageManager.getUserById(id);
+      if (!o) return;
+      document.getElementById('editOfficerId').value = o.id;
+      document.getElementById('officerModalTitle').textContent = 'Edit Data Petugas';
+      document.getElementById('formOfficerName').value = o.name;
+      document.getElementById('formOfficerEmail').value = o.email;
+      document.getElementById('formOfficerPhone').value = o.phone || '';
+      document.getElementById('formOfficerVehicle').value = o.vehicle || '';
+      document.getElementById('formOfficerZone').value = o.zone || '';
+      new bootstrap.Modal(document.getElementById('officerModal')).show();
+    }
+
+    function handleSaveOfficer(e) {
+      e.preventDefault();
+      const editId = document.getElementById('editOfficerId').value;
+      const name = document.getElementById('formOfficerName').value.trim();
+      const email = document.getElementById('formOfficerEmail').value.trim();
+      const phone = document.getElementById('formOfficerPhone').value.trim();
+      const vehicle = document.getElementById('formOfficerVehicle').value.trim();
+      const zone = document.getElementById('formOfficerZone').value.trim();
+
+      if (editId) {
+        const existing = StorageManager.getUserById(editId);
+        existing.name = name;
+        existing.email = email;
+        existing.phone = phone;
+        existing.vehicle = vehicle;
+        existing.zone = zone;
+        StorageManager.saveUser(existing);
+        App.toast('Data petugas berhasil diperbarui.', 'success');
+      } else {
+        const newOfficer = {
+          id: `usr_petugas_${Date.now()}`,
+          name,
+          email,
+          password: 'petugas123',
+          role: 'officer',
+          phone,
+          vehicle,
+          zone,
+          created_at: new Date().toISOString().replace('T', ' ').substring(0, 19)
+        };
+        StorageManager.saveUser(newOfficer);
+        App.toast('Petugas baru berhasil ditambahkan.', 'success');
+      }
+
+      bootstrap.Modal.getInstance(document.getElementById('officerModal')).hide();
+      renderUserTables();
+    }
+
+    function deleteUserPrompt(id) {
+      const u = StorageManager.getUserById(id);
+      if (!u) return;
+      App.confirmModal({
+        title: 'Hapus Pengguna Simulasi?',
+        message: `Apakah Anda yakin ingin menghapus akun <strong>${u.name}</strong>?`,
+        confirmText: 'Ya, Hapus',
+        confirmBtnClass: 'btn-danger',
+        onConfirm: () => {
+          StorageManager.deleteUser(id);
+          App.toast(`Akun ${u.name} telah dihapus.`, 'warning');
+          renderUserTables();
+        }
+      });
+    }
+  </script>
+</body>
+</html>
+

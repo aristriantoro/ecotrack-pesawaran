@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Riwayat Laporan Saya — EcoTrack Kab. Pesawaran</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap">
+  <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+
+  <div id="simBannerContainer"></div>
+
+  <div class="dashboard-wrapper">
+    <aside class="sidebar"></aside>
+
+    <div class="main-content">
+      <header class="topbar"></header>
+
+      <main class="content-body">
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-4">
+          <div>
+            <h4 class="fw-bold text-dark mb-1">Riwayat Seluruh Laporan Saya</h4>
+            <p class="text-muted small mb-0">Daftar semua laporan sampah yang pernah Anda laporkan di Kabupaten Pesawaran.</p>
+          </div>
+          <a href="create-report.html" class="btn btn-primary-eco btn-sm">
+            <i class="bi bi-plus-lg me-1"></i> Buat Laporan Baru
+          </a>
+        </div>
+
+        <!-- Filter & Search Toolbar -->
+        <div class="card border-0 shadow-sm rounded-4 bg-white p-3 mb-4">
+          <div class="row g-2 align-items-center">
+            <div class="col-md-5">
+              <div class="input-group">
+                <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-search"></i></span>
+                <input type="text" class="form-control bg-light border-start-0" id="searchKeyword" placeholder="Cari ID, judul, atau alamat..." oninput="filterHistory()">
+              </div>
+            </div>
+            <div class="col-md-4">
+              <select class="form-select bg-light" id="statusFilter" onchange="filterHistory()">
+                <option value="">Semua Status</option>
+                <option value="Menunggu Verifikasi">Menunggu Verifikasi</option>
+                <option value="Terverifikasi">Terverifikasi</option>
+                <option value="Ditugaskan">Ditugaskan</option>
+                <option value="Dalam Penanganan">Dalam Penanganan</option>
+                <option value="Selesai">Selesai</option>
+                <option value="Ditolak">Ditolak</option>
+                <option value="Dibatalkan">Dibatalkan</option>
+              </select>
+            </div>
+            <div class="col-md-3 text-md-end">
+              <span class="small text-muted" id="countInfo">Menampilkan 0 laporan</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Reports Table -->
+        <div class="card border-0 shadow-sm rounded-4 overflow-hidden bg-white">
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+              <thead class="table-light">
+                <tr class="small text-muted text-uppercase">
+                  <th class="ps-4">No. Laporan</th>
+                  <th>Tanggal</th>
+                  <th>Judul Laporan</th>
+                  <th>Kategori</th>
+                  <th>Wilayah</th>
+                  <th>Status Penanganan</th>
+                  <th class="text-end pe-4">Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="historyTableBody">
+                <!-- Injected via JS -->
+              </tbody>
+            </table>
+          </div>
+
+          <div id="emptyHistoryState" class="text-center py-5 d-none">
+            <i class="bi bi-search fs-1 text-muted mb-2 d-block"></i>
+            <h6 class="fw-bold text-dark">Laporan Tidak Ditemukan</h6>
+            <p class="text-muted small">Coba ubah kata kunci pencarian atau filter status yang dipilih.</p>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="../assets/js/data-seed.js"></script>
+  <script src="../assets/js/storage.js"></script>
+  <script src="../assets/js/auth.js"></script>
+  <script src="../assets/js/app.js"></script>
+
+  <script>
+    const user = Auth.requireAuth(['citizen'], 1);
+    let myReports = [];
+
+    if (user) {
+      App.renderSimulationBanner();
+      App.renderSidebar('citizen', 'history');
+      App.renderTopbar('Riwayat Laporan', [
+        { label: 'EcoTrack', href: '../index.html' },
+        { label: 'Dashboard', href: 'dashboard.html' },
+        { label: 'Riwayat' }
+      ]);
+
+      myReports = StorageManager.getReports().filter(r => r.user_id === user.id);
+      filterHistory();
+    }
+
+    function filterHistory() {
+      const keyword = (document.getElementById('searchKeyword').value || '').toLowerCase().trim();
+      const status = document.getElementById('statusFilter').value;
+
+      const filtered = myReports.filter(r => {
+        const matchesKeyword = !keyword || 
+          r.id.toLowerCase().includes(keyword) || 
+          r.title.toLowerCase().includes(keyword) || 
+          r.address.toLowerCase().includes(keyword) ||
+          r.village.toLowerCase().includes(keyword);
+
+        const matchesStatus = !status || r.status === status;
+        return matchesKeyword && matchesStatus;
+      });
+
+      document.getElementById('countInfo').textContent = `Menampilkan ${filtered.length} dari ${myReports.length} laporan`;
+
+      const tbody = document.getElementById('historyTableBody');
+      const emptyState = document.getElementById('emptyHistoryState');
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = '';
+        emptyState.classList.remove('d-none');
+      } else {
+        emptyState.classList.add('d-none');
+        tbody.innerHTML = filtered.map(r => `
+          <tr>
+            <td class="ps-4 fw-bold text-dark">${r.id}</td>
+            <td class="small text-muted">${App.formatDate(r.created_at)}</td>
+            <td>
+              <div class="fw-semibold text-dark text-truncate" style="max-width: 260px;">${App.escapeHtml(r.title)}</div>
+              <small class="text-muted text-truncate d-block" style="max-width: 260px;">${App.escapeHtml(r.address)}</small>
+            </td>
+            <td><span class="badge bg-light text-dark border">${App.escapeHtml(r.category_name)}</span></td>
+            <td class="small text-dark">${App.escapeHtml(r.district)}, ${App.escapeHtml(r.village)}</td>
+            <td>${App.getStatusBadge(r.status)}</td>
+            <td class="text-end pe-4">
+              <div class="d-inline-flex gap-1">
+                <a href="detail-report.html?id=${r.id}" class="btn btn-sm btn-outline-eco" title="Lihat Detail">
+                  <i class="bi bi-eye"></i> Detail
+                </a>
+                ${r.status === 'Menunggu Verifikasi' ? `
+                  <button type="button" class="btn btn-sm btn-outline-danger" onclick="cancelPrompt('${r.id}')" title="Batalkan Laporan">
+                    <i class="bi bi-x-circle"></i>
+                  </button>
+                ` : ''}
+              </div>
+            </td>
+          </tr>
+        `).join('');
+      }
+    }
+
+    function cancelPrompt(reportId) {
+      App.confirmModal({
+        title: 'Batalkan Laporan?',
+        message: `Apakah Anda yakin ingin membatalkan laporan <strong>${reportId}</strong>? Status akan berubah menjadi Dibatalkan.`,
+        confirmText: 'Ya, Batalkan',
+        confirmBtnClass: 'btn-danger',
+        onConfirm: () => {
+          try {
+            StorageManager.cancelReport(reportId, user);
+            App.toast(`Laporan ${reportId} telah dibatalkan.`, 'success');
+            // refresh data
+            myReports = StorageManager.getReports().filter(r => r.user_id === user.id);
+            filterHistory();
+          } catch (e) {
+            App.toast(e.message, 'danger');
+          }
+        }
+      });
+    }
+  </script>
+</body>
+</html>
+

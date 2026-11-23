@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Daftar Tugas Petugas — EcoTrack Kab. Pesawaran</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap">
+  <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+
+  <div id="simBannerContainer"></div>
+
+  <div class="dashboard-wrapper">
+    <aside class="sidebar"></aside>
+
+    <div class="main-content">
+      <header class="topbar"></header>
+
+      <main class="content-body">
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-4">
+          <div>
+            <h4 class="fw-bold text-dark mb-1">Daftar Tugas Penanganan Sampah</h4>
+            <p class="text-muted small mb-0">Seluruh tugas pengangkutan dan penanganan sampah yang ditugaskan kepada Anda oleh Admin DLH.</p>
+          </div>
+        </div>
+
+        <!-- Filter & Search Toolbar -->
+        <div class="card border-0 shadow-sm rounded-4 bg-white p-3 mb-4">
+          <div class="row g-2 align-items-center">
+            <div class="col-md-5">
+              <div class="input-group">
+                <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-search"></i></span>
+                <input type="text" class="form-control bg-light border-start-0" id="searchTaskInput" placeholder="Cari ID, judul, atau lokasi sampah..." oninput="filterTasks()">
+              </div>
+            </div>
+            <div class="col-md-4">
+              <select class="form-select bg-light" id="statusTaskFilter" onchange="filterTasks()">
+                <option value="">Semua Status Tugas</option>
+                <option value="Ditugaskan">Tugas Baru (Ditugaskan)</option>
+                <option value="Dalam Penanganan">Sedang Dalam Penanganan</option>
+                <option value="Selesai">Tugas Selesai</option>
+              </select>
+            </div>
+            <div class="col-md-3 text-md-end">
+              <span class="small text-muted" id="taskCountInfo">Menampilkan 0 tugas</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tasks Table -->
+        <div class="card border-0 shadow-sm rounded-4 overflow-hidden bg-white">
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+              <thead class="table-light">
+                <tr class="small text-muted text-uppercase">
+                  <th class="ps-4">No. Laporan</th>
+                  <th>Tanggal Ditugaskan</th>
+                  <th>Judul Laporan</th>
+                  <th>Kategori</th>
+                  <th>Kecamatan / Desa</th>
+                  <th>Status Kerja</th>
+                  <th class="text-end pe-4">Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="tasksTableBody">
+                <!-- Injected via JS -->
+              </tbody>
+            </table>
+          </div>
+
+          <div id="emptyTaskFilterState" class="text-center py-5 d-none">
+            <i class="bi bi-search fs-1 text-muted mb-2 d-block"></i>
+            <h6 class="fw-bold text-dark">Tidak Ditemukan Tugas yang Cocok</h6>
+            <p class="text-muted small">Coba ubah kata kunci pencarian atau filter status tugas Anda.</p>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="../assets/js/data-seed.js"></script>
+  <script src="../assets/js/storage.js"></script>
+  <script src="../assets/js/auth.js"></script>
+  <script src="../assets/js/app.js"></script>
+
+  <script>
+    const user = Auth.requireAuth(['officer'], 1);
+    let myTasks = [];
+
+    if (user) {
+      App.renderSimulationBanner();
+      App.renderSidebar('officer', 'tasks');
+      App.renderTopbar('Daftar Tugas Saya', [
+        { label: 'EcoTrack', href: '../index.html' },
+        { label: 'Petugas', href: 'dashboard.html' },
+        { label: 'Daftar Tugas' }
+      ]);
+
+      // Officer only sees reports assigned to their ID
+      myTasks = StorageManager.getReports().filter(r => r.assigned_officer_id === user.id);
+      filterTasks();
+    }
+
+    function filterTasks() {
+      const keyword = (document.getElementById('searchTaskInput').value || '').toLowerCase().trim();
+      const status = document.getElementById('statusTaskFilter').value;
+
+      const filtered = myTasks.filter(t => {
+        const matchesKeyword = !keyword ||
+          t.id.toLowerCase().includes(keyword) ||
+          t.title.toLowerCase().includes(keyword) ||
+          t.address.toLowerCase().includes(keyword) ||
+          t.village.toLowerCase().includes(keyword);
+
+        const matchesStatus = !status || t.status === status;
+        return matchesKeyword && matchesStatus;
+      });
+
+      document.getElementById('taskCountInfo').textContent = `Menampilkan ${filtered.length} dari ${myTasks.length} tugas`;
+
+      const tbody = document.getElementById('tasksTableBody');
+      const emptyState = document.getElementById('emptyTaskFilterState');
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = '';
+        emptyState.classList.remove('d-none');
+      } else {
+        emptyState.classList.add('d-none');
+        tbody.innerHTML = filtered.map(t => `
+          <tr>
+            <td class="ps-4 fw-bold text-dark">${t.id}</td>
+            <td class="small text-muted">${App.formatDate(t.created_at)}</td>
+            <td>
+              <div class="fw-semibold text-dark text-truncate" style="max-width: 250px;">${App.escapeHtml(t.title)}</div>
+              <small class="text-muted text-truncate d-block" style="max-width: 250px;">${App.escapeHtml(t.address)}</small>
+            </td>
+            <td><span class="badge bg-light text-dark border">${App.escapeHtml(t.category_name)}</span></td>
+            <td class="small text-dark">${App.escapeHtml(t.district)}, ${App.escapeHtml(t.village)}</td>
+            <td>${App.getStatusBadge(t.status)}</td>
+            <td class="text-end pe-4">
+              <a href="detail-task.html?id=${t.id}" class="btn btn-sm btn-outline-eco">
+                <i class="bi bi-box-arrow-up-right me-1"></i> Buka Detail & Aksi
+              </a>
+            </td>
+          </tr>
+        `).join('');
+      }
+    }
+  </script>
+</body>
+</html>
+

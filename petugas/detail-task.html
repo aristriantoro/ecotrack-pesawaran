@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Detail & Penanganan Tugas — EcoTrack Kab. Pesawaran</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap">
+  <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+
+  <div id="simBannerContainer"></div>
+
+  <div class="dashboard-wrapper">
+    <aside class="sidebar"></aside>
+
+    <div class="main-content">
+      <header class="topbar"></header>
+
+      <main class="content-body">
+        
+        <!-- Header Nav -->
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-4">
+          <div class="d-flex align-items-center gap-3">
+            <a href="tasks.html" class="btn btn-light border p-2 text-dark rounded-3" title="Kembali ke Daftar Tugas">
+              <i class="bi bi-arrow-left fs-5"></i>
+            </a>
+            <div>
+              <div class="d-flex align-items-center gap-2">
+                <h4 class="fw-bold text-dark mb-0" id="taskHeaderId">RPT-XXXX</h4>
+                <div id="taskStatusBadgeContainer"></div>
+              </div>
+              <small class="text-muted" id="taskHeaderSub">Penugasan Lapangan Kebersihan</small>
+            </div>
+          </div>
+        </div>
+
+        <div class="row g-4">
+          <!-- Left Column: Location & Report Information -->
+          <div class="col-lg-7">
+            
+            <!-- Lokasi & Petunjuk Lapangan -->
+            <div class="card border-0 shadow-sm rounded-4 bg-white p-4 mb-4">
+              <div class="d-flex align-items-center justify-content-between mb-3">
+                <h5 class="fw-bold text-dark mb-0">Lokasi Penanganan Sampah</h5>
+                <span class="badge bg-primary-subtle text-primary">Pesawaran</span>
+              </div>
+
+              <div class="mb-3">
+                <span class="text-muted small d-block">Judul Laporan:</span>
+                <span class="fs-5 fw-bold text-dark" id="taskTitle">-</span>
+              </div>
+
+              <div class="row g-3 mb-3">
+                <div class="col-sm-6">
+                  <span class="text-muted small d-block">Kategori Sampah:</span>
+                  <span class="badge bg-light text-dark border fs-6 mt-1" id="taskCategory">-</span>
+                </div>
+                <div class="col-sm-6">
+                  <span class="text-muted small d-block">Kecamatan & Desa:</span>
+                  <span class="fw-semibold text-dark mt-1 d-block" id="taskDistrictVillage">-</span>
+                </div>
+              </div>
+
+              <div class="mb-3">
+                <span class="text-muted small d-block">Alamat Lengkap & Patokan Lapangan:</span>
+                <div class="p-3 bg-light rounded-3 mt-1 small text-dark fw-semibold" id="taskAddress">-</div>
+              </div>
+
+              <div class="mb-3">
+                <span class="text-muted small d-block">Deskripsi Kondisi Sampah dari Pelapor:</span>
+                <div class="p-3 bg-light rounded-3 mt-1 small text-dark" id="taskDescription" style="white-space: pre-wrap;">-</div>
+              </div>
+
+              <div class="row g-3">
+                <div class="col-sm-6">
+                  <span class="text-muted small d-block">Nama Pelapor:</span>
+                  <span class="fw-semibold text-dark" id="taskReporterName">-</span>
+                </div>
+                <div class="col-sm-6">
+                  <span class="text-muted small d-block">Kontak WhatsApp Pelapor:</span>
+                  <span class="fw-semibold text-success" id="taskReporterPhone">-</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Foto Kondisi Awal -->
+            <div class="card border-0 shadow-sm rounded-4 bg-white p-4 mb-4">
+              <h5 class="fw-bold text-dark mb-3">Foto Kondisi Awal dari Pelapor</h5>
+              <div class="row g-3" id="taskInitialPhotosGrid"></div>
+            </div>
+
+            <!-- Dokumentasi Hasil Selesai (Jika Selesai) -->
+            <div id="taskCompletedBox" class="card border-0 shadow-sm rounded-4 bg-white p-4 d-none" style="border-left: 4px solid var(--strong-green) !important;">
+              <div class="d-flex align-items-center gap-2 mb-2">
+                <i class="bi bi-patch-check-fill text-success fs-4"></i>
+                <h5 class="fw-bold text-success mb-0">Tugas Telah Tuntas Diselesaikan</h5>
+              </div>
+              <p class="text-muted small mb-3">Berikut adalah dokumentasi foto bukti penanganan yang telah Anda unggah:</p>
+              <div class="row g-3 mb-3" id="taskCompletionPhotosGrid"></div>
+              <div class="p-3 bg-light rounded-3 small text-muted" id="taskCompletionNotes">-</div>
+            </div>
+
+          </div>
+
+          <!-- Right Column: Interactive Handling Action & Timeline -->
+          <div class="col-lg-5">
+            
+            <!-- ACTION CARD 1: Mulai Penanganan (If Ditugaskan) -->
+            <div id="actionCardStart" class="card border-0 shadow-sm rounded-4 bg-white p-4 mb-4 d-none" style="border-top: 4px solid #4338CA !important;">
+              <div class="d-flex align-items-center gap-2 mb-3">
+                <i class="bi bi-play-circle-fill text-primary fs-3"></i>
+                <h5 class="fw-bold text-dark mb-0">Mulai Penanganan</h5>
+              </div>
+              <p class="text-muted small mb-3">
+                Status saat ini adalah <strong>Ditugaskan</strong>. Klik tombol di bawah ini saat armada Anda siap atau telah tiba di lokasi untuk mengubah status menjadi <strong>Dalam Penanganan</strong>.
+              </p>
+              <button type="button" class="btn btn-primary-eco w-100 py-2 fw-semibold" onclick="handleStartWork()">
+                <i class="bi bi-truck me-1"></i> Mulai Tangani Pekerjaan
+              </button>
+            </div>
+
+            <!-- ACTION CARD 2: Upload Bukti & Selesaikan (If Dalam Penanganan) -->
+            <div id="actionCardComplete" class="card border-0 shadow-sm rounded-4 bg-white p-4 mb-4 d-none" style="border-top: 4px solid var(--primary-green) !important;">
+              <div class="d-flex align-items-center gap-2 mb-2">
+                <i class="bi bi-camera-fill text-success fs-3"></i>
+                <h5 class="fw-bold text-dark mb-0">Selesaikan Pekerjaan</h5>
+              </div>
+              <p class="text-muted small mb-3">
+                Unggah minimal 1 foto dokumentasi bukti bahwa sampah telah diangkut dan area telah bersih kembali.
+              </p>
+
+              <div id="completeAlertBox" class="alert alert-danger d-none py-2 px-3 small rounded-3 mb-3" role="alert">
+                <i class="bi bi-exclamation-triangle-fill me-1"></i>
+                <span id="completeAlertText">Wajib mengunggah bukti foto!</span>
+              </div>
+
+              <!-- Upload Evidence Box -->
+              <div class="photo-upload-box mb-3 p-3" id="evidenceDropzone">
+                <i class="bi bi-cloud-arrow-up-fill fs-2 text-success mb-1 d-block"></i>
+                <span class="small fw-bold d-block text-dark">Unggah Foto Bukti Bersih</span>
+                <span class="text-muted" style="font-size: 11px;">Klik atau tarik foto hasil penanganan</span>
+                <input type="file" id="evidenceInput" class="d-none" accept="image/*" multiple>
+              </div>
+
+              <!-- Quick Demo Clean Photo Generator Button -->
+              <div class="mb-3">
+                <button type="button" class="btn btn-sm btn-outline-success w-100 py-1" style="font-size: 12px;" onclick="addQuickCleanPhoto()">
+                  <i class="bi bi-magic me-1"></i> Gunakan Foto Simulasi Bersih Cepat
+                </button>
+              </div>
+
+              <!-- Evidence Preview Grid -->
+              <div class="photo-preview-grid mb-3" id="evidencePreviewGrid"></div>
+
+              <!-- Catatan Penyelesaian -->
+              <div class="mb-3">
+                <label class="form-label small fw-semibold text-dark">Catatan Hasil Penanganan (Opsional)</label>
+                <textarea class="form-control" id="completionNotesInput" rows="2" placeholder="Contoh: Sampah tuntas diangkut 1 bak truk ke TPA..."></textarea>
+              </div>
+
+              <button type="button" class="btn btn-success w-100 py-2 fw-semibold shadow-sm" onclick="handleFinishWork()">
+                <i class="bi bi-check2-circle me-1"></i> Selesaikan Tugas & Kirim Bukti
+              </button>
+            </div>
+
+            <!-- Timeline Card -->
+            <div class="card border-0 shadow-sm rounded-4 bg-white p-4">
+              <h5 class="fw-bold text-dark mb-3">Riwayat Status Laporan</h5>
+              <div class="timeline" id="taskTimeline"></div>
+            </div>
+
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="../assets/js/data-seed.js"></script>
+  <script src="../assets/js/storage.js"></script>
+  <script src="../assets/js/auth.js"></script>
+  <script src="../assets/js/app.js"></script>
+
+  <script>
+    const user = Auth.requireAuth(['officer'], 1);
+    const urlParams = new URLSearchParams(window.location.search);
+    const taskId = urlParams.get('id');
+    let currentTask = null;
+    let evidencePhotos = [];
+
+    if (user && taskId) {
+      App.renderSimulationBanner();
+      App.renderSidebar('officer', 'tasks');
+      App.renderTopbar('Detail Tugas', [
+        { label: 'EcoTrack', href: '../index.html' },
+        { label: 'Tugas', href: 'tasks.html' },
+        { label: taskId }
+      ]);
+
+      currentTask = StorageManager.getReportById(taskId);
+      if (!currentTask) {
+        alert("Tugas tidak ditemukan!");
+        window.location.href = 'tasks.html';
+      } else {
+        // Enforce ownership: Petugas only sees their assigned task
+        if (currentTask.assigned_officer_id !== user.id) {
+          alert("Anda tidak memiliki akses ke tugas ini karena ditugaskan ke petugas lain.");
+          window.location.href = 'tasks.html';
+        } else {
+          renderTaskDetails();
+        }
+      }
+    } else {
+      window.location.href = 'tasks.html';
+    }
+
+    function renderTaskDetails() {
+      const t = currentTask;
+      document.getElementById('taskHeaderId').textContent = t.id;
+      document.getElementById('taskStatusBadgeContainer').innerHTML = App.getStatusBadge(t.status);
+      document.getElementById('taskTitle').textContent = t.title;
+      document.getElementById('taskCategory').textContent = t.category_name;
+      document.getElementById('taskDistrictVillage').textContent = `Kec. ${t.district}, Desa ${t.village}`;
+      document.getElementById('taskAddress').textContent = t.address;
+      document.getElementById('taskDescription').textContent = t.description;
+      document.getElementById('taskReporterName').textContent = t.user_name;
+      document.getElementById('taskReporterPhone').textContent = t.user_phone || '-';
+
+      // Initial Photos
+      const photoGrid = document.getElementById('taskInitialPhotosGrid');
+      photoGrid.innerHTML = (t.photos || []).map(p => `
+        <div class="col-sm-6">
+          <div class="border rounded-3 overflow-hidden shadow-sm" style="height: 180px;">
+            <img src="${p}" alt="Foto Kondisi Sampah" class="w-100 h-100" style="object-fit: cover;">
+          </div>
+        </div>
+      `).join('');
+
+      // Status dependent action cards
+      const actionStart = document.getElementById('actionCardStart');
+      const actionComplete = document.getElementById('actionCardComplete');
+      const completedBox = document.getElementById('taskCompletedBox');
+
+      actionStart.classList.add('d-none');
+      actionComplete.classList.add('d-none');
+      completedBox.classList.add('d-none');
+
+      if (t.status === 'Ditugaskan') {
+        actionStart.classList.remove('d-none');
+      } else if (t.status === 'Dalam Penanganan') {
+        actionComplete.classList.remove('d-none');
+        setupEvidenceUploader();
+      } else if (t.status === 'Selesai') {
+        completedBox.classList.remove('d-none');
+        const compGrid = document.getElementById('taskCompletionPhotosGrid');
+        compGrid.innerHTML = (t.completion_photos || []).map(p => `
+          <div class="col-sm-6">
+            <div class="border border-success rounded-3 overflow-hidden shadow-sm" style="height: 180px;">
+              <img src="${p}" alt="Bukti Selesai" class="w-100 h-100" style="object-fit: cover;">
+            </div>
+          </div>
+        `).join('');
+        const compEvent = [...t.timeline].reverse().find(ev => ev.status === 'Selesai');
+        document.getElementById('taskCompletionNotes').textContent = compEvent ? compEvent.notes : 'Pekerjaan selesai.';
+      }
+
+      // Timeline
+      const timelineEl = document.getElementById('taskTimeline');
+      timelineEl.innerHTML = (t.timeline || []).map(ev => `
+        <div class="timeline-item">
+          <div class="timeline-badge done"></div>
+          <div class="timeline-content">
+            <div class="d-flex align-items-center justify-content-between mb-1">
+              <span class="fw-bold small text-dark">${ev.status}</span>
+              <span class="text-muted" style="font-size: 11px;">${App.formatDate(ev.timestamp)}</span>
+            </div>
+            <p class="small text-muted mb-1">${App.escapeHtml(ev.notes)}</p>
+            <small class="text-muted" style="font-size: 11px;">Oleh: <strong>${App.escapeHtml(ev.user_name)}</strong></small>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function setupEvidenceUploader() {
+      App.setupPhotoUploader({
+        dropzoneId: 'evidenceDropzone',
+        inputId: 'evidenceInput',
+        previewGridId: 'evidencePreviewGrid',
+        initialPhotos: evidencePhotos,
+        onPhotosChange: (photos) => {
+          evidencePhotos = photos;
+        }
+      });
+    }
+
+    function addQuickCleanPhoto() {
+      const cleanSvg = generateCleanSvg(currentTask.title || 'Area Bebas Sampah');
+      evidencePhotos.push(cleanSvg);
+      renderEvidencePreviewManually();
+    }
+
+    function renderEvidencePreviewManually() {
+      const grid = document.getElementById('evidencePreviewGrid');
+      grid.innerHTML = '';
+      evidencePhotos.forEach((photoUrl, idx) => {
+        const card = document.createElement('div');
+        card.className = 'photo-preview-card';
+        card.innerHTML = `
+          <img src="${photoUrl}" alt="Preview Bukti ${idx + 1}">
+          <button type="button" class="photo-remove-btn" title="Hapus foto">&times;</button>
+        `;
+        card.querySelector('.photo-remove-btn').addEventListener('click', (e) => {
+          e.stopPropagation();
+          evidencePhotos.splice(idx, 1);
+          renderEvidencePreviewManually();
+        });
+        grid.appendChild(card);
+      });
+    }
+
+    function handleStartWork() {
+      App.confirmModal({
+        title: 'Mulai Penanganan Sampah?',
+        message: 'Status laporan akan diubah menjadi <strong>Dalam Penanganan</strong> dan dicatat ke riwayat penanganan.',
+        confirmText: 'Ya, Mulai Sekarang',
+        confirmBtnClass: 'btn-primary-eco',
+        onConfirm: () => {
+          try {
+            const updated = StorageManager.startHandling(currentTask.id, user);
+            currentTask = updated;
+            App.toast('Status berhasil diubah menjadi Dalam Penanganan!', 'success');
+            renderTaskDetails();
+          } catch (err) {
+            App.toast(err.message, 'danger');
+          }
+        }
+      });
+    }
+
+    function handleFinishWork() {
+      const alertBox = document.getElementById('completeAlertBox');
+      const alertText = document.getElementById('completeAlertText');
+      alertBox.classList.add('d-none');
+
+      if (evidencePhotos.length === 0) {
+        alertText.textContent = "Wajib mengunggah minimal satu foto bukti penanganan sebelum menyelesaikan tugas! (Gunakan tombol simulasi foto jika perlu)";
+        alertBox.classList.remove('d-none');
+        return;
+      }
+
+      const notes = document.getElementById('completionNotesInput').value.trim();
+
+      App.confirmModal({
+        title: 'Selesaikan Tugas Ini?',
+        message: 'Apakah Anda yakin penanganan sampah di titik ini telah tuntas? Status akan diubah menjadi <strong>Selesai</strong> dan foto bukti akan dikirimkan ke pelapor serta admin.',
+        confirmText: 'Ya, Selesaikan Tugas',
+        confirmBtnClass: 'btn-success',
+        onConfirm: () => {
+          try {
+            const updated = StorageManager.completeReport(currentTask.id, evidencePhotos, notes, user);
+            currentTask = updated;
+            App.toast(`Tugas ${currentTask.id} berhasil diselesaikan!`, 'success');
+            renderTaskDetails();
+          } catch (err) {
+            alertText.textContent = err.message;
+            alertBox.classList.remove('d-none');
+          }
+        }
+      });
+    }
+  </script>
+</body>
+</html>
+

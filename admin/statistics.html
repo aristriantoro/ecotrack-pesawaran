@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Statistik & Rekapitulasi — EcoTrack Kab. Pesawaran</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap">
+  <link rel="stylesheet" href="../assets/css/style.css">
+  <style>
+    @media print {
+      .sidebar, .topbar, .simulation-banner, .btn-print, .filter-card {
+        display: none !important;
+      }
+      .main-content {
+        margin-left: 0 !important;
+      }
+      .content-body {
+        padding: 0 !important;
+      }
+      .print-header {
+        display: block !important;
+        margin-bottom: 2rem;
+        border-bottom: 2px solid #000;
+        padding-bottom: 1rem;
+      }
+    }
+    .print-header {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="simBannerContainer"></div>
+
+  <div class="dashboard-wrapper">
+    <aside class="sidebar"></aside>
+
+    <div class="main-content">
+      <header class="topbar"></header>
+
+      <main class="content-body">
+        
+        <!-- Print Header (Visible only when printed) -->
+        <div class="print-header text-center">
+          <h3 class="fw-bold mb-1">DINAS LINGKUNGAN HIDUP KABUPATEN PESAWARAN</h3>
+          <h5 class="mb-0">REKAPITULASI LAPORAN MONITORING & PENANGANAN PERSAMPAHAN</h5>
+          <small class="text-muted">Dicetak pada: <span id="printDate"></span> melalui Sistem EcoTrack</small>
+        </div>
+
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-4">
+          <div>
+            <h4 class="fw-bold text-dark mb-1">Statistik & Rekapitulasi Persampahan</h4>
+            <p class="text-muted small mb-0">Laporan evaluasi tingkat penyelesaian dan beban kerja penanganan sampah di Kabupaten Pesawaran.</p>
+          </div>
+          <button type="button" class="btn btn-outline-dark btn-sm btn-print" onclick="window.print()">
+            <i class="bi bi-printer-fill me-1"></i> Cetak / Ekspor PDF Rekap
+          </button>
+        </div>
+
+        <!-- Filter Card -->
+        <div class="card border-0 shadow-sm rounded-4 bg-white p-3 mb-4 filter-card">
+          <div class="row g-2 align-items-center">
+            <div class="col-md-5">
+              <label class="form-label small fw-semibold text-muted mb-1">Filter Kecamatan:</label>
+              <select class="form-select bg-light" id="statDistrictFilter" onchange="renderStatistics()">
+                <option value="">Seluruh Kabupaten Pesawaran (11 Kecamatan)</option>
+              </select>
+            </div>
+            <div class="col-md-5">
+              <label class="form-label small fw-semibold text-muted mb-1">Filter Kategori Sampah:</label>
+              <select class="form-select bg-light" id="statCategoryFilter" onchange="renderStatistics()">
+                <option value="">Semua Kategori Sampah</option>
+              </select>
+            </div>
+            <div class="col-md-2 text-md-end pt-md-4">
+              <button class="btn btn-outline-secondary btn-sm w-100" onclick="resetStatFilters()">
+                <i class="bi bi-arrow-counterclockwise"></i> Reset Filter
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Metric Summary Cards -->
+        <div class="row g-3 mb-4">
+          <div class="col-sm-6 col-lg-3">
+            <div class="card border-0 shadow-sm rounded-4 bg-white p-3">
+              <small class="text-muted fw-semibold">Total Laporan Terdata</small>
+              <h3 class="fw-bold text-dark mt-1 mb-0" id="statTotalFilter">0</h3>
+              <small class="text-muted" style="font-size: 11px;">Dalam lingkup filter</small>
+            </div>
+          </div>
+          <div class="col-sm-6 col-lg-3">
+            <div class="card border-0 shadow-sm rounded-4 bg-white p-3">
+              <small class="text-muted fw-semibold">Penyelesaian Berhasil</small>
+              <h3 class="fw-bold text-success mt-1 mb-0" id="statCompletedFilter">0</h3>
+              <small class="text-success" style="font-size: 11px;">Status: Selesai</small>
+            </div>
+          </div>
+          <div class="col-sm-6 col-lg-3">
+            <div class="card border-0 shadow-sm rounded-4 bg-white p-3">
+              <small class="text-muted fw-semibold">Tingkat Keberhasilan (Rate)</small>
+              <h3 class="fw-bold text-primary mt-1 mb-0" id="statSuccessRate">0%</h3>
+              <small class="text-muted" style="font-size: 11px;">Selesai / Laporan Valid</small>
+            </div>
+          </div>
+          <div class="col-sm-6 col-lg-3">
+            <div class="card border-0 shadow-sm rounded-4 bg-white p-3">
+              <small class="text-muted fw-semibold">Dalam Proses Lapangan</small>
+              <h3 class="fw-bold mt-1 mb-0" style="color: #0D9488;" id="statInProgressFilter">0</h3>
+              <small class="text-muted" style="font-size: 11px;">Ditugaskan + Penanganan</small>
+            </div>
+          </div>
+        </div>
+
+        <!-- Chart Section -->
+        <div class="row g-4 mb-4">
+          <div class="col-lg-6">
+            <div class="card border-0 shadow-sm rounded-4 bg-white p-4 h-100">
+              <h6 class="fw-bold text-dark mb-3">Distribusi Laporan per Kategori Sampah</h6>
+              <div style="height: 270px;">
+                <canvas id="statCategoryChart"></canvas>
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-6">
+            <div class="card border-0 shadow-sm rounded-4 bg-white p-4 h-100">
+              <h6 class="fw-bold text-dark mb-3">Tingkat Penanganan per Status</h6>
+              <div style="height: 270px;">
+                <canvas id="statStatusChart"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Rekapitulasi Tabel per Kecamatan -->
+        <div class="card border-0 shadow-sm rounded-4 overflow-hidden bg-white mb-4">
+          <div class="card-header bg-white py-3 px-4 border-bottom">
+            <h6 class="fw-bold text-dark mb-0">Tabel Rekapitulasi Penanganan Sampah per Kecamatan di Kab. Pesawaran</h6>
+          </div>
+          <div class="table-responsive">
+            <table class="table table-bordered table-hover align-middle mb-0 text-center">
+              <thead class="table-light small text-uppercase">
+                <tr>
+                  <th class="text-start ps-4">Kecamatan</th>
+                  <th>Total Laporan</th>
+                  <th>Menunggu</th>
+                  <th>Terverifikasi</th>
+                  <th>Ditugaskan</th>
+                  <th>Penanganan</th>
+                  <th>Selesai</th>
+                  <th>Ditolak</th>
+                  <th>Penyelesaian (%)</th>
+                </tr>
+              </thead>
+              <tbody id="recapTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+  <script src="../assets/js/data-seed.js"></script>
+  <script src="../assets/js/storage.js"></script>
+  <script src="../assets/js/auth.js"></script>
+  <script src="../assets/js/app.js"></script>
+
+  <script>
+    const user = Auth.requireAuth(['admin'], 1);
+    let chartCat = null;
+    let chartStat = null;
+
+    if (user) {
+      App.renderSimulationBanner();
+      App.renderSidebar('admin', 'statistics');
+      App.renderTopbar('Statistik & Rekap', [
+        { label: 'EcoTrack', href: '../index.html' },
+        { label: 'Admin', href: 'dashboard.html' },
+        { label: 'Statistik' }
+      ]);
+
+      document.getElementById('printDate').textContent = new Date().toLocaleDateString('id-ID', {
+        day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit'
+      });
+
+      // Populate filter dropdowns
+      const wilayah = StorageManager.getWilayah();
+      const distSelect = document.getElementById('statDistrictFilter');
+      Object.keys(wilayah).forEach(k => {
+        distSelect.innerHTML += `<option value="${k}">${k}</option>`;
+      });
+
+      const categories = StorageManager.getCategories();
+      const catSelect = document.getElementById('statCategoryFilter');
+      categories.forEach(c => {
+        catSelect.innerHTML += `<option value="${c.name}">${c.name}</option>`;
+      });
+
+      renderStatistics();
+    }
+
+    function resetStatFilters() {
+      document.getElementById('statDistrictFilter').value = '';
+      document.getElementById('statCategoryFilter').value = '';
+      renderStatistics();
+    }
+
+    function renderStatistics() {
+      const selectedDistrict = document.getElementById('statDistrictFilter').value;
+      const selectedCategory = document.getElementById('statCategoryFilter').value;
+
+      let reports = StorageManager.getReports();
+      if (selectedDistrict) {
+        reports = reports.filter(r => r.district === selectedDistrict);
+      }
+      if (selectedCategory) {
+        reports = reports.filter(r => r.category_name === selectedCategory);
+      }
+
+      // Metrics
+      const total = reports.length;
+      const selesai = reports.filter(r => r.status === 'Selesai').length;
+      const inProgress = reports.filter(r => ['Ditugaskan', 'Dalam Penanganan'].includes(r.status)).length;
+      const validReports = reports.filter(r => r.status !== 'Ditolak' && r.status !== 'Dibatalkan').length;
+      const rate = validReports > 0 ? Math.round((selesai / validReports) * 100) : 0;
+
+      document.getElementById('statTotalFilter').textContent = total;
+      document.getElementById('statCompletedFilter').textContent = selesai;
+      document.getElementById('statInProgressFilter').textContent = inProgress;
+      document.getElementById('statSuccessRate').textContent = rate + '%';
+
+      // Charts
+      renderCharts(reports);
+
+      // Recap Table
+      renderRecapTable();
+    }
+
+    function renderCharts(reports) {
+      const categories = StorageManager.getCategories();
+      const catLabels = categories.map(c => c.name);
+      const catCounts = catLabels.map(cat => reports.filter(r => r.category_name === cat).length);
+
+      // Destroy old charts if existing
+      if (chartCat) chartCat.destroy();
+      if (chartStat) chartStat.destroy();
+
+      const ctxCat = document.getElementById('statCategoryChart');
+      if (ctxCat) {
+        chartCat = new Chart(ctxCat, {
+          type: 'bar',
+          data: {
+            labels: catLabels.map(l => l.replace('Sampah ', '')),
+            datasets: [{
+              label: 'Jumlah Laporan',
+              data: catCounts,
+              backgroundColor: '#006A61',
+              borderRadius: 5
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+          }
+        });
+      }
+
+      const statusLabels = ['Menunggu', 'Terverifikasi', 'Ditugaskan', 'Penanganan', 'Selesai', 'Ditolak'];
+      const statusCounts = [
+        reports.filter(r => r.status === 'Menunggu Verifikasi').length,
+        reports.filter(r => r.status === 'Terverifikasi').length,
+        reports.filter(r => r.status === 'Ditugaskan').length,
+        reports.filter(r => r.status === 'Dalam Penanganan').length,
+        reports.filter(r => r.status === 'Selesai').length,
+        reports.filter(r => r.status === 'Ditolak').length
+      ];
+
+      const ctxStat = document.getElementById('statStatusChart');
+      if (ctxStat) {
+        chartStat = new Chart(ctxStat, {
+          type: 'pie',
+          data: {
+            labels: statusLabels,
+            datasets: [{
+              data: statusCounts,
+              backgroundColor: ['#F59E0B', '#0284C7', '#6366F1', '#0D9488', '#00873A', '#E11D48']
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { position: 'right', labels: { boxWidth: 12, font: { size: 11 } } }
+            }
+          }
+        });
+      }
+    }
+
+    function renderRecapTable() {
+      const wilayah = StorageManager.getWilayah();
+      const reports = StorageManager.getReports();
+      const tbody = document.getElementById('recapTableBody');
+
+      tbody.innerHTML = Object.keys(wilayah).map(dist => {
+        const distReports = reports.filter(r => r.district === dist);
+        const total = distReports.length;
+        const menunggu = distReports.filter(r => r.status === 'Menunggu Verifikasi').length;
+        const terverifikasi = distReports.filter(r => r.status === 'Terverifikasi').length;
+        const ditugaskan = distReports.filter(r => r.status === 'Ditugaskan').length;
+        const penanganan = distReports.filter(r => r.status === 'Dalam Penanganan').length;
+        const selesai = distReports.filter(r => r.status === 'Selesai').length;
+        const ditolak = distReports.filter(r => r.status === 'Ditolak').length;
+        const valid = distReports.filter(r => !['Ditolak', 'Dibatalkan'].includes(r.status)).length;
+        const percent = valid > 0 ? Math.round((selesai / valid) * 100) : 0;
+
+        return `
+          <tr>
+            <td class="text-start ps-4 fw-semibold text-dark">${dist}</td>
+            <td class="fw-bold">${total}</td>
+            <td><span class="badge bg-warning-subtle text-warning">${menunggu}</span></td>
+            <td><span class="badge bg-info-subtle text-info">${terverifikasi}</span></td>
+            <td><span class="badge" style="background:#EEF2FF; color:#4338CA;">${ditugaskan}</span></td>
+            <td><span class="badge" style="background:#CCFBF1; color:#0F766E;">${penanganan}</span></td>
+            <td><span class="badge bg-success-subtle text-success">${selesai}</span></td>
+            <td><span class="badge bg-danger-subtle text-danger">${ditolak}</span></td>
+            <td>
+              <div class="progress" style="height: 16px;">
+                <div class="progress-bar bg-success" role="progressbar" style="width: ${percent}%;" aria-valuenow="${percent}" aria-valuemin="0" aria-valuemax="100">${percent}%</div>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+  </script>
+</body>
+</html>
+

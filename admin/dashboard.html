@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard — EcoTrack Kab. Pesawaran</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap">
+  <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+
+  <div id="simBannerContainer"></div>
+
+  <div class="dashboard-wrapper">
+    <aside class="sidebar"></aside>
+
+    <div class="main-content">
+      <header class="topbar"></header>
+
+      <main class="content-body">
+        
+        <!-- Welcome Header -->
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-4">
+          <div>
+            <h4 class="fw-bold text-dark mb-1">Pusat Monitoring Pengelolaan Sampah</h4>
+            <p class="text-muted small mb-0">Dinas Lingkungan Hidup Kabupaten Pesawaran, Provinsi Lampung</p>
+          </div>
+          <div class="d-flex gap-2">
+            <a href="verification.html" class="btn btn-warning text-dark fw-semibold btn-sm shadow-sm">
+              <i class="bi bi-shield-check me-1"></i> Verifikasi Laporan (<span id="btnMenungguCount">0</span>)
+            </a>
+            <a href="assignments.html" class="btn btn-primary-eco btn-sm shadow-sm">
+              <i class="bi bi-person-plus-fill me-1"></i> Penugasan Petugas
+            </a>
+          </div>
+        </div>
+
+        <!-- 7 KPI Statistics Cards -->
+        <div class="row g-3 mb-4">
+          <div class="col-sm-6 col-md-4 col-xl">
+            <div class="eco-stat-card">
+              <div>
+                <small class="text-muted fw-semibold">Total Laporan</small>
+                <h3 class="fw-bold text-dark mt-1 mb-0" id="kpiTotal">0</h3>
+              </div>
+              <div class="stat-icon bg-light text-dark"><i class="bi bi-folder-fill"></i></div>
+            </div>
+          </div>
+
+          <div class="col-sm-6 col-md-4 col-xl">
+            <div class="eco-stat-card">
+              <div>
+                <small class="text-muted fw-semibold">Menunggu Verifikasi</small>
+                <h3 class="fw-bold text-warning mt-1 mb-0" id="kpiMenunggu">0</h3>
+              </div>
+              <div class="stat-icon bg-warning-subtle text-warning"><i class="bi bi-clock-history"></i></div>
+            </div>
+          </div>
+
+          <div class="col-sm-6 col-md-4 col-xl">
+            <div class="eco-stat-card">
+              <div>
+                <small class="text-muted fw-semibold">Terverifikasi</small>
+                <h3 class="fw-bold text-info mt-1 mb-0" style="color:#0284C7;" id="kpiTerverifikasi">0</h3>
+              </div>
+              <div class="stat-icon bg-info-subtle text-info"><i class="bi bi-patch-check"></i></div>
+            </div>
+          </div>
+
+          <div class="col-sm-6 col-md-4 col-xl">
+            <div class="eco-stat-card">
+              <div>
+                <small class="text-muted fw-semibold">Ditugaskan</small>
+                <h3 class="fw-bold mt-1 mb-0" style="color:#6366F1;" id="kpiDitugaskan">0</h3>
+              </div>
+              <div class="stat-icon" style="background:#EEF2FF; color:#6366F1;"><i class="bi bi-person-check-fill"></i></div>
+            </div>
+          </div>
+
+          <div class="col-sm-6 col-md-4 col-xl">
+            <div class="eco-stat-card">
+              <div>
+                <small class="text-muted fw-semibold">Penanganan</small>
+                <h3 class="fw-bold mt-1 mb-0" style="color:#0D9488;" id="kpiPenanganan">0</h3>
+              </div>
+              <div class="stat-icon" style="background:#CCFBF1; color:#0D9488;"><i class="bi bi-tools"></i></div>
+            </div>
+          </div>
+
+          <div class="col-sm-6 col-md-4 col-xl">
+            <div class="eco-stat-card">
+              <div>
+                <small class="text-muted fw-semibold">Selesai</small>
+                <h3 class="fw-bold text-success mt-1 mb-0" id="kpiSelesai">0</h3>
+              </div>
+              <div class="stat-icon bg-success-subtle text-success"><i class="bi bi-check2-circle"></i></div>
+            </div>
+          </div>
+
+          <div class="col-sm-6 col-md-4 col-xl">
+            <div class="eco-stat-card">
+              <div>
+                <small class="text-muted fw-semibold">Ditolak</small>
+                <h3 class="fw-bold text-danger mt-1 mb-0" id="kpiDitolak">0</h3>
+              </div>
+              <div class="stat-icon bg-danger-subtle text-danger"><i class="bi bi-x-circle-fill"></i></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Charts Row -->
+        <div class="row g-4 mb-4">
+          <div class="col-lg-5">
+            <div class="card border-0 shadow-sm rounded-4 bg-white p-4 h-100">
+              <h6 class="fw-bold text-dark mb-1">Distribusi Status Laporan</h6>
+              <small class="text-muted mb-3 d-block">Proporsi status penanganan sampah di Kab. Pesawaran</small>
+              <div style="height: 260px;" class="position-relative">
+                <canvas id="chartStatusDistribution"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-lg-7">
+            <div class="card border-0 shadow-sm rounded-4 bg-white p-4 h-100">
+              <h6 class="fw-bold text-dark mb-1">Laporan Berdasarkan Kecamatan</h6>
+              <small class="text-muted mb-3 d-block">Jumlah titik penanganan sampah di 11 Kecamatan Kab. Pesawaran</small>
+              <div style="height: 260px;" class="position-relative">
+                <canvas id="chartDistrictBar"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Actions & Table Row -->
+        <div class="row g-4">
+          <!-- Left: Laporan Perlu Tindakan -->
+          <div class="col-lg-8">
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden bg-white">
+              <div class="card-header bg-white py-3 px-4 border-bottom d-flex align-items-center justify-content-between">
+                <div>
+                  <h6 class="fw-bold text-dark mb-0">Laporan Menunggu Tindakan Admin</h6>
+                  <small class="text-muted">Perlu segera diverifikasi atau dialokasikan ke petugas armada.</small>
+                </div>
+                <a href="reports.html" class="btn btn-outline-eco btn-sm">Lihat Semua</a>
+              </div>
+
+              <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                  <thead class="table-light">
+                    <tr class="small text-muted text-uppercase">
+                      <th class="ps-4">No. Laporan</th>
+                      <th>Pelapor</th>
+                      <th>Judul & Lokasi</th>
+                      <th>Status</th>
+                      <th class="text-end pe-4">Aksi Cepat</th>
+                    </tr>
+                  </thead>
+                  <tbody id="adminActionReportsTable"></tbody>
+                </table>
+              </div>
+
+              <div id="emptyAdminActionReports" class="text-center py-4 d-none">
+                <i class="bi bi-check-all text-success fs-1"></i>
+                <p class="text-muted small mt-2 mb-0">Semua laporan telah diverifikasi dan ditugaskan!</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right: Aktivitas Terkini (Activity Feed) -->
+          <div class="col-lg-4">
+            <div class="card border-0 shadow-sm rounded-4 bg-white p-4 h-100">
+              <h6 class="fw-bold text-dark mb-3">Aktivitas Laporan Terkini</h6>
+              <div class="timeline" id="adminActivityFeed" style="max-height: 400px; overflow-y: auto;">
+                <!-- Injected via JS -->
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+  <script src="../assets/js/data-seed.js"></script>
+  <script src="../assets/js/storage.js"></script>
+  <script src="../assets/js/auth.js"></script>
+  <script src="../assets/js/app.js"></script>
+
+  <script>
+    const user = Auth.requireAuth(['admin'], 1);
+    if (user) {
+      App.renderSimulationBanner();
+      App.renderSidebar('admin', 'dashboard');
+      App.renderTopbar('Dashboard Admin', [
+        { label: 'EcoTrack', href: '../index.html' },
+        { label: 'Admin', href: 'dashboard.html' },
+        { label: 'Dashboard' }
+      ]);
+
+      const stats = StorageManager.getStats();
+      document.getElementById('kpiTotal').textContent = stats.total;
+      document.getElementById('kpiMenunggu').textContent = stats.menunggu;
+      document.getElementById('kpiTerverifikasi').textContent = stats.terverifikasi;
+      document.getElementById('kpiDitugaskan').textContent = stats.ditugaskan;
+      document.getElementById('kpiPenanganan').textContent = stats.penanganan;
+      document.getElementById('kpiSelesai').textContent = stats.selesai;
+      document.getElementById('kpiDitolak').textContent = stats.ditolak;
+      document.getElementById('btnMenungguCount').textContent = stats.menunggu;
+
+      const reports = StorageManager.getReports();
+
+      // Table: Action reports (Menunggu Verifikasi & Terverifikasi)
+      const actionReports = reports.filter(r => ['Menunggu Verifikasi', 'Terverifikasi'].includes(r.status)).slice(0, 5);
+      const actionTable = document.getElementById('adminActionReportsTable');
+      const emptyAction = document.getElementById('emptyAdminActionReports');
+
+      if (actionReports.length === 0) {
+        emptyAction.classList.remove('d-none');
+        actionTable.innerHTML = '';
+      } else {
+        emptyAction.classList.add('d-none');
+        actionTable.innerHTML = actionReports.map(r => `
+          <tr>
+            <td class="ps-4 fw-bold text-dark">${r.id}</td>
+            <td class="small">
+              <div class="fw-semibold text-dark">${App.escapeHtml(r.user_name)}</div>
+              <span class="text-muted">${r.user_phone || '-'}</span>
+            </td>
+            <td>
+              <div class="fw-semibold text-dark text-truncate" style="max-width: 220px;">${App.escapeHtml(r.title)}</div>
+              <small class="text-muted text-truncate d-block" style="max-width: 220px;">${App.escapeHtml(r.district)}, ${App.escapeHtml(r.village)}</small>
+            </td>
+            <td>${App.getStatusBadge(r.status)}</td>
+            <td class="text-end pe-4">
+              ${r.status === 'Menunggu Verifikasi' ? `
+                <a href="verification.html?id=${r.id}" class="btn btn-sm btn-warning text-dark fw-semibold">
+                  <i class="bi bi-shield-check"></i> Verifikasi
+                </a>
+              ` : `
+                <a href="assignments.html?id=${r.id}" class="btn btn-sm btn-primary-eco">
+                  <i class="bi bi-person-plus"></i> Tugaskan
+                </a>
+              `}
+            </td>
+          </tr>
+        `).join('');
+      }
+
+      // Activity Feed (Collect latest timeline items across all reports)
+      const feedItems = [];
+      reports.forEach(r => {
+        (r.timeline || []).forEach(ev => {
+          feedItems.push({
+            reportId: r.id,
+            title: r.title,
+            ...ev
+          });
+        });
+      });
+
+      feedItems.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+      const activityFeed = document.getElementById('adminActivityFeed');
+      activityFeed.innerHTML = feedItems.slice(0, 7).map(item => `
+        <div class="timeline-item">
+          <div class="timeline-badge done"></div>
+          <div class="timeline-content">
+            <div class="d-flex align-items-center justify-content-between mb-1">
+              <strong class="text-dark small">${item.reportId}: ${item.status}</strong>
+              <span class="text-muted" style="font-size: 11px;">${App.formatDate(item.timestamp)}</span>
+            </div>
+            <p class="small text-muted mb-1 text-truncate">${App.escapeHtml(item.notes)}</p>
+            <small class="text-muted" style="font-size: 10px;">Oleh: ${App.escapeHtml(item.user_name)}</small>
+          </div>
+        </div>
+      `).join('');
+
+      // 1. Doughnut Chart Status Distribution
+      const ctxDonut = document.getElementById('chartStatusDistribution');
+      if (ctxDonut) {
+        new Chart(ctxDonut, {
+          type: 'doughnut',
+          data: {
+            labels: ['Menunggu', 'Terverifikasi', 'Ditugaskan', 'Penanganan', 'Selesai', 'Ditolak'],
+            datasets: [{
+              data: [stats.menunggu, stats.terverifikasi, stats.ditugaskan, stats.penanganan, stats.selesai, stats.ditolak],
+              backgroundColor: ['#F59E0B', '#0284C7', '#6366F1', '#0D9488', '#00873A', '#E11D48'],
+              borderWidth: 2,
+              borderColor: '#ffffff'
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: 'bottom',
+                labels: { boxWidth: 12, font: { size: 11 } }
+              }
+            }
+          }
+        });
+      }
+
+      // 2. Bar Chart Districts
+      const ctxBar = document.getElementById('chartDistrictBar');
+      if (ctxBar) {
+        const wilayah = StorageManager.getWilayah();
+        const districts = Object.keys(wilayah);
+        const distCounts = districts.map(d => reports.filter(r => r.district === d).length);
+
+        new Chart(ctxBar, {
+          type: 'bar',
+          data: {
+            labels: districts.map(d => d.replace('Kabupaten ', '')),
+            datasets: [{
+              label: 'Jumlah Laporan',
+              data: distCounts,
+              backgroundColor: '#006B2C',
+              borderRadius: 4
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false }
+            },
+            scales: {
+              y: { beginAtZero: true, ticks: { precision: 0 } },
+              x: { ticks: { font: { size: 10 } } }
+            }
+          }
+        });
+      }
+    }
+  </script>
+</body>
+</html>
+

@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Verifikasi Laporan Masuk — EcoTrack Kab. Pesawaran</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap">
+  <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+
+  <div id="simBannerContainer"></div>
+
+  <div class="dashboard-wrapper">
+    <aside class="sidebar"></aside>
+
+    <div class="main-content">
+      <header class="topbar"></header>
+
+      <main class="content-body">
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-4">
+          <div>
+            <h4 class="fw-bold text-dark mb-1">Antrian Verifikasi Laporan Masyarakat</h4>
+            <p class="text-muted small mb-0">Tinjau laporan baru, verifikasi kelayakan lokasi publik, atau tolak dengan alasan resmi.</p>
+          </div>
+          <span class="badge bg-warning-subtle text-warning fs-6 px-3 py-2 border border-warning-subtle" id="queueBadge">
+            <i class="bi bi-clock-history me-1"></i> <span id="queueCount">0</span> Laporan Menunggu
+          </span>
+        </div>
+
+        <!-- Verification Cards Grid / List -->
+        <div class="row g-4" id="verificationQueueList">
+          <!-- Injected via JS -->
+        </div>
+
+        <div id="emptyQueueState" class="card border-0 shadow-sm rounded-4 p-5 text-center bg-white d-none">
+          <i class="bi bi-check2-circle fs-1 text-success mb-2 d-block"></i>
+          <h5 class="fw-bold text-dark">Tidak Ada Laporan Menunggu Verifikasi</h5>
+          <p class="text-muted small mb-0">Seluruh laporan masyarakat telah diproses. Anda dapat memeriksa laporan terverifikasi di menu Penugasan Petugas.</p>
+          <div class="mt-3">
+            <a href="assignments.html" class="btn btn-primary-eco btn-sm">Buka Penugasan Petugas</a>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- Rejection Modal -->
+  <div class="modal fade" id="rejectModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content border-0 shadow">
+        <div class="modal-header border-bottom">
+          <h5 class="modal-title fw-bold text-danger">
+            <i class="bi bi-x-circle-fill me-1"></i> Tolak Laporan Permasalahan
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body p-4">
+          <p class="text-muted small mb-3">
+            Sesuai aturan operasional, penolakan laporan <strong>wajib menyertakan alasan penolakan</strong> yang jelas agar masyarakat pelapor memahami penyebabnya (misal: area privat, foto tidak jelas, duplikasi, dll).
+          </p>
+
+          <div id="rejectAlert" class="alert alert-danger d-none py-2 px-3 small rounded-3 mb-3">
+            Alasan penolakan wajib diisi!
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small fw-semibold text-dark">Pilih Contoh Alasan Cepat:</label>
+            <div class="d-flex flex-wrap gap-1 mb-2">
+              <button type="button" class="btn btn-sm btn-light border py-1 px-2" style="font-size: 11px;" onclick="setRejectReason('Lokasi berada di pekarangan/halaman pribadi warga, bukan fasilitas umum.')">Area Privat</button>
+              <button type="button" class="btn btn-sm btn-light border py-1 px-2" style="font-size: 11px;" onclick="setRejectReason('Foto dokumentasi buram atau tidak memperlihatkan titik tumpukan yang jelas.')">Foto Tidak Jelas</button>
+              <button type="button" class="btn btn-sm btn-light border py-1 px-2" style="font-size: 11px;" onclick="setRejectReason('Laporan duplikat dengan titik yang sudah dalam penanganan armada.')">Laporan Duplikat</button>
+              <button type="button" class="btn btn-sm btn-light border py-1 px-2" style="font-size: 11px;" onclick="setRejectReason('Puing sisa bongkaran bangunan/konstruksi swadaya, bukan sampah domestik DLH.')">Puing Bangunan</button>
+            </div>
+            <textarea class="form-control" id="rejectReasonInput" rows="3" placeholder="Tuliskan alasan penolakan secara spesifik..." required></textarea>
+          </div>
+        </div>
+        <div class="modal-footer border-top">
+          <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+          <button type="button" class="btn btn-danger" onclick="submitRejection()">Konfirmasi Tolak Laporan</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="../assets/js/data-seed.js"></script>
+  <script src="../assets/js/storage.js"></script>
+  <script src="../assets/js/auth.js"></script>
+  <script src="../assets/js/app.js"></script>
+
+  <script>
+    const user = Auth.requireAuth(['admin'], 1);
+    let selectedReportIdForReject = null;
+
+    if (user) {
+      App.renderSimulationBanner();
+      App.renderSidebar('admin', 'verification');
+      App.renderTopbar('Verifikasi Laporan', [
+        { label: 'EcoTrack', href: '../index.html' },
+        { label: 'Admin', href: 'dashboard.html' },
+        { label: 'Verifikasi' }
+      ]);
+
+      renderVerificationQueue();
+    }
+
+    function renderVerificationQueue() {
+      const reports = StorageManager.getReports();
+      const queue = reports.filter(r => r.status === 'Menunggu Verifikasi');
+
+      document.getElementById('queueCount').textContent = queue.length;
+      const listContainer = document.getElementById('verificationQueueList');
+      const emptyState = document.getElementById('emptyQueueState');
+
+      if (queue.length === 0) {
+        listContainer.innerHTML = '';
+        emptyState.classList.remove('d-none');
+      } else {
+        emptyState.classList.add('d-none');
+        listContainer.innerHTML = queue.map(r => `
+          <div class="col-lg-6">
+            <div class="card border-0 shadow-sm rounded-4 bg-white overflow-hidden h-100 d-flex flex-column">
+              <div class="card-header bg-white py-3 px-4 border-bottom d-flex align-items-center justify-content-between">
+                <div>
+                  <span class="fw-bold text-dark fs-6">${r.id}</span>
+                  <small class="text-muted d-block">${App.formatDate(r.created_at)}</small>
+                </div>
+                <span class="badge-eco badge-menunggu">Menunggu Verifikasi</span>
+              </div>
+
+              <div class="card-body p-4 flex-grow-1">
+                <div class="mb-2">
+                  <span class="badge bg-light text-dark border small">${App.escapeHtml(r.category_name)}</span>
+                  <span class="badge bg-secondary-subtle text-secondary small ms-1">Kec. ${App.escapeHtml(r.district)}, ${App.escapeHtml(r.village)}</span>
+                </div>
+                <h5 class="fw-bold text-dark mb-2">${App.escapeHtml(r.title)}</h5>
+                <p class="small text-muted mb-3" style="white-space: pre-wrap;">${App.escapeHtml(r.description)}</p>
+
+                <div class="p-2 bg-light rounded-3 mb-3 small">
+                  <strong>Lokasi Patokan:</strong> ${App.escapeHtml(r.address)}<br>
+                  <strong>Pelapor:</strong> ${App.escapeHtml(r.user_name)} (${r.user_phone || '-'})
+                </div>
+
+                <div class="mb-3">
+                  <small class="text-muted d-block mb-1 fw-semibold">Foto Bukti Sampah dari Warga:</small>
+                  <div class="row g-2">
+                    ${(r.photos || []).map(p => `
+                      <div class="col-6">
+                        <img src="${p}" class="img-fluid rounded border shadow-sm w-100" style="height: 140px; object-fit: cover;">
+                      </div>
+                    `).join('')}
+                  </div>
+                </div>
+              </div>
+
+              <div class="card-footer bg-white border-top p-3 d-flex gap-2 justify-content-end">
+                <button type="button" class="btn btn-outline-danger btn-sm px-3" onclick="openRejectModal('${r.id}')">
+                  <i class="bi bi-x-circle me-1"></i> Tolak Laporan
+                </button>
+                <button type="button" class="btn btn-primary-eco btn-sm px-3" onclick="approveReport('${r.id}')">
+                  <i class="bi bi-check2-circle me-1"></i> Setujui (Terverifikasi)
+                </button>
+              </div>
+            </div>
+          </div>
+        `).join('');
+      }
+    }
+
+    function approveReport(id) {
+      App.confirmModal({
+        title: 'Verifikasi & Setujui Laporan?',
+        message: `Laporan <strong>${id}</strong> akan diubah statusnya menjadi <strong>Terverifikasi</strong> dan siap dialokasikan ke armada petugas kebersihan.`,
+        confirmText: 'Ya, Setujui Laporan',
+        confirmBtnClass: 'btn-primary-eco',
+        onConfirm: () => {
+          try {
+            StorageManager.verifyReport(id, user);
+            App.toast(`Laporan ${id} berhasil diverifikasi!`, 'success');
+            renderVerificationQueue();
+          } catch (err) {
+            App.toast(err.message, 'danger');
+          }
+        }
+      });
+    }
+
+    function openRejectModal(id) {
+      selectedReportIdForReject = id;
+      document.getElementById('rejectReasonInput').value = '';
+      document.getElementById('rejectAlert').classList.add('d-none');
+      const bsModal = new bootstrap.Modal(document.getElementById('rejectModal'));
+      bsModal.show();
+    }
+
+    function setRejectReason(txt) {
+      document.getElementById('rejectReasonInput').value = txt;
+    }
+
+    function submitRejection() {
+      const reason = document.getElementById('rejectReasonInput').value.trim();
+      const alertBox = document.getElementById('rejectAlert');
+
+      if (!reason) {
+        alertBox.textContent = "Alasan penolakan laporan wajib diisi!";
+        alertBox.classList.remove('d-none');
+        return;
+      }
+
+      try {
+        StorageManager.rejectReport(selectedReportIdForReject, reason, user);
+        bootstrap.Modal.getInstance(document.getElementById('rejectModal')).hide();
+        App.toast(`Laporan ${selectedReportIdForReject} telah ditolak dengan alasan yang tersimpan.`, 'warning');
+        renderVerificationQueue();
+      } catch (err) {
+        alertBox.textContent = err.message;
+        alertBox.classList.remove('d-none');
+      }
+    }
+  </script>
+</body>
+</html>
+

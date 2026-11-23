@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Profil Petugas — EcoTrack Kab. Pesawaran</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap">
+  <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+
+  <div id="simBannerContainer"></div>
+
+  <div class="dashboard-wrapper">
+    <aside class="sidebar"></aside>
+
+    <div class="main-content">
+      <header class="topbar"></header>
+
+      <main class="content-body">
+        <div class="d-flex align-items-center justify-content-between mb-4">
+          <div>
+            <h4 class="fw-bold text-dark mb-1">Profil Petugas Kebersihan</h4>
+            <p class="text-muted small mb-0">Informasi identitas petugas dan rincian penugasan armada kebersihan.</p>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-lg-8">
+            <div class="card border-0 shadow-sm rounded-4 bg-white p-4 p-md-5">
+              <div class="d-flex align-items-center gap-3 mb-4 pb-3 border-bottom">
+                <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fs-3 fw-bold" style="width: 64px; height: 64px;" id="officerAvatar">
+                  JS
+                </div>
+                <div>
+                  <h5 class="fw-bold mb-0" id="officerNameDisplay">Joko Susanto</h5>
+                  <span class="badge bg-primary-subtle text-primary">Petugas Kebersihan Lapangan DLH</span>
+                </div>
+              </div>
+
+              <div class="row g-3 mb-3">
+                <div class="col-md-6">
+                  <label class="form-label small fw-semibold text-dark">Nama Lengkap</label>
+                  <input type="text" class="form-control" id="officerName" readonly>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label small fw-semibold text-dark">Alamat Email</label>
+                  <input type="email" class="form-control bg-light" id="officerEmail" readonly>
+                </div>
+              </div>
+
+              <div class="row g-3 mb-3">
+                <div class="col-md-6">
+                  <label class="form-label small fw-semibold text-dark">Nomor Telepon / WhatsApp</label>
+                  <input type="text" class="form-control" id="officerPhone" readonly>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label small fw-semibold text-dark">Kendaraan / Armada Operasional</label>
+                  <input type="text" class="form-control bg-light" id="officerVehicle" readonly>
+                </div>
+              </div>
+
+              <div class="mb-4">
+                <label class="form-label small fw-semibold text-dark">Wilayah Zonasi Tugas</label>
+                <input type="text" class="form-control bg-light" id="officerZone" readonly>
+              </div>
+
+              <div class="alert alert-info py-2 px-3 small rounded-3 mb-0">
+                <i class="bi bi-info-circle-fill me-1"></i> Data armada dan wilayah zonasi dikelola oleh Administrator DLH Kab. Pesawaran.
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="../assets/js/data-seed.js"></script>
+  <script src="../assets/js/storage.js"></script>
+  <script src="../assets/js/auth.js"></script>
+  <script src="../assets/js/app.js"></script>
+
+  <script>
+    const user = Auth.requireAuth(['officer'], 1);
+    if (user) {
+      App.renderSimulationBanner();
+      App.renderSidebar('officer', 'profile');
+      App.renderTopbar('Profil Petugas', [{ label: 'EcoTrack', href: '../index.html' }, { label: 'Profil' }]);
+
+      document.getElementById('officerName').value = user.name;
+      document.getElementById('officerEmail').value = user.email;
+      document.getElementById('officerPhone').value = user.phone || '-';
+      document.getElementById('officerVehicle').value = user.vehicle || 'Truk Pengangkut No. 03';
+      document.getElementById('officerZone').value = user.zone || 'Kecamatan Gedong Tataan';
+      document.getElementById('officerNameDisplay').textContent = user.name;
+      document.getElementById('officerAvatar').textContent = user.name.split(' ').map(n=>n[0]).slice(0,2).join('');
+    }
+  </script>
+</body>
+</html>
+

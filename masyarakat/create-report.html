@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Buat Laporan Sampah — EcoTrack Kab. Pesawaran</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap">
+  <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+
+  <div id="simBannerContainer"></div>
+
+  <div class="dashboard-wrapper">
+    <aside class="sidebar"></aside>
+
+    <div class="main-content">
+      <header class="topbar"></header>
+
+      <main class="content-body">
+        <div class="d-flex align-items-center justify-content-between mb-4">
+          <div>
+            <h4 class="fw-bold text-dark mb-1">Formulir Laporan Permasalahan Sampah</h4>
+            <p class="text-muted small mb-0">Isi data lokasi dan kondisi sampah dengan lengkap dan jelas agar mempermudah verifikasi dan penanganan petugas.</p>
+          </div>
+          <a href="dashboard.html" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left"></i> Kembali
+          </a>
+        </div>
+
+        <div class="row justify-content-center">
+          <div class="col-lg-10 col-xl-9">
+            <div class="card border-0 shadow-sm rounded-4 bg-white p-4 p-md-5">
+
+              <div id="createAlertBox" class="alert alert-danger d-none py-2 px-3 small rounded-3 mb-4" role="alert">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                <span id="createAlertText">Terjadi kesalahan input.</span>
+              </div>
+
+              <form id="createReportForm" onsubmit="handleCreateReport(event)">
+                
+                <!-- Judul Laporan -->
+                <div class="mb-4">
+                  <label class="form-label fw-semibold text-dark">Judul Laporan <span class="text-danger">*</span></label>
+                  <input type="text" class="form-control" id="reportTitle" placeholder="Contoh: Tumpukan Sampah Plastik Menumpuk di Dekat Jembatan" required>
+                  <div class="form-text small">Tuliskan ringkasan singkat permasalahan sampah yang Anda temukan.</div>
+                </div>
+
+                <!-- Kategori Sampah -->
+                <div class="mb-4">
+                  <label class="form-label fw-semibold text-dark">Kategori Sampah <span class="text-danger">*</span></label>
+                  <select class="form-select" id="reportCategory" required>
+                    <option value="">-- Pilih Kategori Sampah --</option>
+                  </select>
+                  <div class="form-text small" id="categoryDescriptionHelper">Pilih jenis sampah yang paling dominan di lokasi.</div>
+                </div>
+
+                <!-- Wilayah (Kecamatan & Desa di Pesawaran) -->
+                <div class="row g-3 mb-4">
+                  <div class="col-md-6">
+                    <label class="form-label fw-semibold text-dark">Kecamatan di Kab. Pesawaran <span class="text-danger">*</span></label>
+                    <select class="form-select" id="reportDistrict" required>
+                      <option value="">-- Pilih Kecamatan --</option>
+                    </select>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label fw-semibold text-dark">Desa / Kelurahan <span class="text-danger">*</span></label>
+                    <select class="form-select" id="reportVillage" required disabled>
+                      <option value="">-- Pilih Desa/Kelurahan --</option>
+                    </select>
+                  </div>
+                </div>
+
+                <!-- Alamat / Patokan Lokasi -->
+                <div class="mb-4">
+                  <label class="form-label fw-semibold text-dark">Alamat Lengkap & Petunjuk Patokan Lokasi <span class="text-danger">*</span></label>
+                  <textarea class="form-control" id="reportAddress" rows="3" placeholder="Contoh: Jl. Lintas Barat KM 15, samping gapura masuk Dusun 2, dekat warung Bu Siti..." required></textarea>
+                  <div class="form-text small">Berikan patokan yang spesifik agar armada petugas tidak kesulitan mencari titik tumpukan.</div>
+                </div>
+
+                <!-- Deskripsi Permasalahan -->
+                <div class="mb-4">
+                  <label class="form-label fw-semibold text-dark">Deskripsi Rinci Permasalahan <span class="text-danger">*</span></label>
+                  <textarea class="form-control" id="reportDescription" rows="4" placeholder="Jelaskan perkiraan volume sampah, sudah berapa hari menumpuk, apakah berbau menyengat, atau mengganggu saluran air/jalan raya..." required></textarea>
+                </div>
+
+                <!-- Unggah Foto Kondisi Sampah -->
+                <div class="mb-4">
+                  <label class="form-label fw-semibold text-dark">Foto Dokumentasi Kondisi Sampah <span class="text-danger">*</span></label>
+                  
+                  <div class="photo-upload-box" id="reportPhotoDropzone">
+                    <i class="bi bi-cloud-arrow-up-fill fs-1 text-success mb-2 d-block"></i>
+                    <h6 class="fw-bold mb-1">Klik atau Tarik Foto ke Sini</h6>
+                    <p class="text-muted small mb-0">Format didukung: JPG, PNG, WEBP (Maksimal 5 MB per foto). Minimal 1 foto wajib diunggah.</p>
+                    <input type="file" id="reportPhotoInput" class="d-none" accept="image/*" multiple>
+                  </div>
+
+                  <!-- Quick Demo Sample Photos Pill -->
+                  <div class="d-flex align-items-center gap-2 mt-2">
+                    <small class="text-muted">Atau gunakan foto simulasi cepat:</small>
+                    <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2" style="font-size: 11px;" onclick="addSamplePhoto('Tumpukan Plastik')">
+                      + Contoh Foto Plastik
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2" style="font-size: 11px;" onclick="addSamplePhoto('Sampah Liar')">
+                      + Contoh Foto Sampah Liar
+                    </button>
+                  </div>
+
+                  <!-- Preview Grid -->
+                  <div class="photo-preview-grid" id="reportPhotoPreviewGrid"></div>
+                </div>
+
+                <!-- Tombol Submit -->
+                <div class="d-flex align-items-center justify-content-end gap-3 pt-3 border-top">
+                  <a href="dashboard.html" class="btn btn-light px-4">Batal</a>
+                  <button type="submit" class="btn btn-primary-eco px-4 py-2" id="submitBtn">
+                    <i class="bi bi-send-fill me-1"></i> Kirim Laporan Sampah
+                  </button>
+                </div>
+
+              </form>
+
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="../assets/js/data-seed.js"></script>
+  <script src="../assets/js/storage.js"></script>
+  <script src="../assets/js/auth.js"></script>
+  <script src="../assets/js/app.js"></script>
+
+  <script>
+    const user = Auth.requireAuth(['citizen'], 1);
+    let uploadedPhotos = [];
+
+    if (user) {
+      App.renderSimulationBanner();
+      App.renderSidebar('citizen', 'create-report');
+      App.renderTopbar('Buat Laporan Baru', [
+        { label: 'EcoTrack', href: '../index.html' },
+        { label: 'Dashboard', href: 'dashboard.html' },
+        { label: 'Buat Laporan' }
+      ]);
+
+      // Populate Categories
+      const categories = StorageManager.getCategories();
+      const catSelect = document.getElementById('reportCategory');
+      categories.forEach(c => {
+        catSelect.innerHTML += `<option value="${c.id}" data-desc="${App.escapeHtml(c.description)}">${App.escapeHtml(c.name)}</option>`;
+      });
+
+      catSelect.addEventListener('change', () => {
+        const selected = catSelect.options[catSelect.selectedIndex];
+        const desc = selected.getAttribute('data-desc');
+        document.getElementById('categoryDescriptionHelper').textContent = desc || 'Pilih jenis sampah.';
+      });
+
+      // Setup Cascading Kecamatan -> Desa
+      App.setupKecamatanDesa('reportDistrict', 'reportVillage');
+
+      // Setup Photo Uploader
+      App.setupPhotoUploader({
+        dropzoneId: 'reportPhotoDropzone',
+        inputId: 'reportPhotoInput',
+        previewGridId: 'reportPhotoPreviewGrid',
+        initialPhotos: [],
+        onPhotosChange: (photos) => {
+          uploadedPhotos = photos;
+        }
+      });
+    }
+
+    function addSamplePhoto(label) {
+      const sampleSvg = generateWasteSvg(label, '#D97706');
+      uploadedPhotos.push(sampleSvg);
+      renderPreviewManually();
+    }
+
+    function renderPreviewManually() {
+      const grid = document.getElementById('reportPhotoPreviewGrid');
+      grid.innerHTML = '';
+      uploadedPhotos.forEach((photoUrl, idx) => {
+        const card = document.createElement('div');
+        card.className = 'photo-preview-card';
+        card.innerHTML = `
+          <img src="${photoUrl}" alt="Preview Foto ${idx + 1}">
+          <button type="button" class="photo-remove-btn" title="Hapus foto">&times;</button>
+        `;
+        card.querySelector('.photo-remove-btn').addEventListener('click', (e) => {
+          e.stopPropagation();
+          uploadedPhotos.splice(idx, 1);
+          renderPreviewManually();
+        });
+        grid.appendChild(card);
+      });
+    }
+
+    function handleCreateReport(e) {
+      e.preventDefault();
+      const title = document.getElementById('reportTitle').value.trim();
+      const catSelect = document.getElementById('reportCategory');
+      const categoryId = catSelect.value;
+      const categoryName = catSelect.options[catSelect.selectedIndex].text;
+      const district = document.getElementById('reportDistrict').value;
+      const village = document.getElementById('reportVillage').value;
+      const address = document.getElementById('reportAddress').value.trim();
+      const description = document.getElementById('reportDescription').value.trim();
+
+      const alertBox = document.getElementById('createAlertBox');
+      const alertText = document.getElementById('createAlertText');
+
+      alertBox.classList.add('d-none');
+
+      // Validasi
+      if (!title) {
+        alertText.textContent = "Judul laporan wajib diisi.";
+        alertBox.classList.remove('d-none');
+        return;
+      }
+      if (!categoryId) {
+        alertText.textContent = "Kategori sampah wajib dipilih.";
+        alertBox.classList.remove('d-none');
+        return;
+      }
+      if (!district || !village) {
+        alertText.textContent = "Kecamatan dan Desa/Kelurahan di Kab. Pesawaran wajib dipilih.";
+        alertBox.classList.remove('d-none');
+        return;
+      }
+      if (!address) {
+        alertText.textContent = "Alamat dan patokan lokasi wajib diisi.";
+        alertBox.classList.remove('d-none');
+        return;
+      }
+      if (!description) {
+        alertText.textContent = "Deskripsi permasalahan sampah wajib diisi.";
+        alertBox.classList.remove('d-none');
+        return;
+      }
+      if (uploadedPhotos.length === 0) {
+        alertText.textContent = "Wajib mengunggah minimal 1 foto dokumentasi sampah atau gunakan tombol contoh foto simulasi!";
+        alertBox.classList.remove('d-none');
+        return;
+      }
+
+      try {
+        const newReport = StorageManager.createReport({
+          title,
+          category_id: categoryId,
+          category_name: categoryName,
+          district,
+          village,
+          address,
+          description,
+          photos: uploadedPhotos
+        }, user);
+
+        App.toast(`Laporan sampah ${newReport.id} berhasil dikirim! Status awal: Menunggu Verifikasi.`, 'success');
+        setTimeout(() => {
+          window.location.href = `detail-report.html?id=${newReport.id}`;
+        }, 700);
+
+      } catch (err) {
+        alertText.textContent = err.message;
+        alertBox.classList.remove('d-none');
+      }
+    }
+  </script>
+</body>
+</html>
+

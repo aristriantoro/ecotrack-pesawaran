@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EcoTrack — Sistem Informasi Monitoring & Pengelolaan Sampah Kab. Pesawaran</title>
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <!-- Google Fonts Inter -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap">
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body class="bg-white">
+
+  <!-- Simulation Top Banner -->
+  <div id="simBannerContainer"></div>
+
+  <!-- Navigation Bar -->
+  <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom sticky-top py-3">
+    <div class="container">
+      <a class="navbar-brand d-flex align-items-center gap-2 fw-bold text-success fs-4" href="index.html">
+        <div class="bg-success text-white rounded-3 p-2 d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;">
+          <i class="bi bi-recycle fs-5"></i>
+        </div>
+        <span>Eco<span style="color: var(--secondary-teal);">Track</span></span>
+      </a>
+      <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navMenu">
+        <ul class="navbar-nav mx-auto mb-2 mb-lg-0 fw-medium">
+          <li class="nav-item"><a class="nav-link text-dark px-3" href="#tentang">Tentang</a></li>
+          <li class="nav-item"><a class="nav-link text-dark px-3" href="#masalah">Urgensi</a></li>
+          <li class="nav-item"><a class="nav-link text-dark px-3" href="#alur">Alur Kerja</a></li>
+          <li class="nav-item"><a class="nav-link text-dark px-3" href="#fitur">Fitur Unggulan</a></li>
+          <li class="nav-item"><a class="nav-link text-dark px-3" href="#wilayah">Wilayah Layanan</a></li>
+        </ul>
+        <div class="d-flex align-items-center gap-2" id="navAuthArea">
+          <a href="login.html" class="btn btn-outline-eco px-3 py-2">Masuk</a>
+          <a href="register.html" class="btn btn-primary-eco px-3 py-2">Daftar Akun</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="py-5 bg-light position-relative overflow-hidden" style="background: linear-gradient(180deg, #F0FDF4 0%, #FFFFFF 100%);">
+    <div class="container py-4">
+      <div class="row align-items-center g-5">
+        <div class="col-lg-7">
+          <div class="d-inline-flex align-items-center gap-2 px-3 py-1 rounded-pill bg-white border border-success-subtle shadow-sm mb-3">
+            <span class="badge bg-success rounded-pill px-2">Simulasi Web</span>
+            <small class="fw-semibold text-secondary">Kabupaten Pesawaran, Provinsi Lampung</small>
+          </div>
+          <h1 class="display-4 fw-extrabold text-dark mb-3 lh-sm">
+            Wujudkan Pesawaran Bersih, <span style="color: var(--primary-green);">Lapor Sampah Jadi Mudah & Cepat.</span>
+          </h1>
+          <p class="lead text-muted mb-4 fs-6">
+            Platform terpadu pelaporan, verifikasi dinas, penugasan armada petugas kebersihan, hingga pemantauan bukti penanganan secara transparan dan terukur dalam satu sistem informasi digital.
+          </p>
+          <div class="d-flex flex-wrap gap-3 mb-4">
+            <a href="login.html?role=citizen" class="btn btn-primary-eco btn-lg px-4 py-2 fs-6 shadow-sm d-flex align-items-center gap-2">
+              <i class="bi bi-camera-fill"></i> Buat Laporan Sampah
+            </a>
+            <a href="#alur" class="btn btn-outline-secondary btn-lg px-4 py-2 fs-6 bg-white">
+              Pelajari Cara Kerja
+            </a>
+          </div>
+
+          <!-- Quick Demo Access Badges -->
+          <div class="card p-3 border-0 bg-white shadow-sm rounded-4">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+              <span class="small fw-bold text-dark"><i class="bi bi-person-badge-fill text-success me-1"></i> Coba Akun Demo Langsung:</span>
+              <span class="badge bg-light text-muted border">1-Click Login</span>
+            </div>
+            <div class="d-flex flex-wrap gap-2">
+              <button class="btn btn-sm btn-outline-success" onclick="quickLogin('masyarakat@ecotrack.demo', 'user123')">
+                <i class="bi bi-person-fill"></i> Warga (Siti Aminah)
+              </button>
+              <button class="btn btn-sm btn-outline-primary" onclick="quickLogin('petugas@ecotrack.demo', 'petugas123')">
+                <i class="bi bi-truck"></i> Petugas (Joko S.)
+              </button>
+              <button class="btn btn-sm btn-outline-dark" onclick="quickLogin('admin@ecotrack.demo', 'admin123')">
+                <i class="bi bi-shield-lock-fill"></i> Admin DLH (Budi S.)
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-5">
+          <div class="card border-0 shadow-lg rounded-4 overflow-hidden position-relative">
+            <div class="card-header bg-success text-white py-3 px-4 d-flex align-items-center justify-content-between">
+              <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-activity fs-5"></i>
+                <span class="fw-bold">Status Penanganan Terkini</span>
+              </div>
+              <span class="badge bg-white text-success fw-bold">Live Data</span>
+            </div>
+            <div class="card-body p-4">
+              <div class="d-flex align-items-center gap-3 p-3 bg-light rounded-3 mb-3">
+                <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+                  <i class="bi bi-check2-all fs-4"></i>
+                </div>
+                <div>
+                  <div class="fs-4 fw-bold text-dark" id="heroStatCompleted">0</div>
+                  <div class="small text-muted">Laporan Selesai Ditangani</div>
+                </div>
+              </div>
+              <div class="d-flex align-items-center gap-3 p-3 bg-light rounded-3 mb-3">
+                <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+                  <i class="bi bi-truck fs-4"></i>
+                </div>
+                <div>
+                  <div class="fs-4 fw-bold text-dark" id="heroStatProcessing">0</div>
+                  <div class="small text-muted">Dalam Proses Penanganan Petugas</div>
+                </div>
+              </div>
+              <div class="d-flex align-items-center gap-3 p-3 bg-light rounded-3">
+                <div class="bg-warning text-dark rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+                  <i class="bi bi-clock-history fs-4"></i>
+                </div>
+                <div>
+                  <div class="fs-4 fw-bold text-dark" id="heroStatWaiting">0</div>
+                  <div class="small text-muted">Menunggu Verifikasi Admin</div>
+                </div>
+              </div>
+            </div>
+            <div class="card-footer bg-white border-top text-center py-3 text-muted small">
+              Data terintegrasi 11 Kecamatan di Kabupaten Pesawaran
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Masalah / Problem Statement -->
+  <section class="py-5 bg-white" id="masalah">
+    <div class="container py-4">
+      <div class="text-center max-w-700 mx-auto mb-5">
+        <h6 class="text-success fw-bold text-uppercase">Latar Belakang</h6>
+        <h2 class="fw-bold text-dark">Tantangan Pengelolaan Sampah di Pesawaran</h2>
+        <p class="text-muted">Aktivitas permukiman, kawasan pasar desa, hingga destinasi pesisir pantai memerlukan kolaborasi cepat antara masyarakat, armada kebersihan, dan pemangku kebijakan.</p>
+      </div>
+
+      <div class="row g-4">
+        <div class="col-md-4">
+          <div class="p-4 rounded-4 border bg-light h-100">
+            <div class="bg-white text-danger rounded-3 p-3 d-inline-block shadow-sm mb-3">
+              <i class="bi bi-exclamation-octagon-fill fs-3"></i>
+            </div>
+            <h5 class="fw-bold">Pelaporan Tidak Terpusat</h5>
+            <p class="text-muted small mb-0">Laporan sampah liar sering tersebar lewat pesan instan atau media sosial tanpa koordinat dan rincian yang jelas, sehingga sulit ditindaklanjuti.</p>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="p-4 rounded-4 border bg-light h-100">
+            <div class="bg-white text-warning rounded-3 p-3 d-inline-block shadow-sm mb-3">
+              <i class="bi bi-geo-alt-fill fs-3"></i>
+            </div>
+            <h5 class="fw-bold">Petugas Sulit Mencari Lokasi</h5>
+            <p class="text-muted small mb-0">Kurangnya detail patokan alamat desa dan dokumentasi foto kondisi tumpukan membuat petugas memerlukan waktu lebih lama mencari titik sampah.</p>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="p-4 rounded-4 border bg-light h-100">
+            <div class="bg-white text-success rounded-3 p-3 d-inline-block shadow-sm mb-3">
+              <i class="bi bi-eye-slash-fill fs-3"></i>
+            </div>
+            <h5 class="fw-bold">Status Kurang Transparan</h5>
+            <p class="text-muted small mb-0">Masyarakat tidak mengetahui apakah keluhan mereka sudah ditanggapi, kapan jadwal pengangkutan, serta bukti tuntas pembersihan di lapangan.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Alur Kerja 3 Langkah -->
+  <section class="py-5 bg-light" id="alur">
+    <div class="container py-4">
+      <div class="text-center mb-5">
+        <h6 class="text-success fw-bold text-uppercase">Solusi Digital</h6>
+        <h2 class="fw-bold text-dark">Alur Kerja Cepat EcoTrack</h2>
+        <p class="text-muted">Tiga tahap sederhana dari penemuan sampah hingga tuntas diangkut armada kebersihan</p>
+      </div>
+
+      <div class="row g-4">
+        <div class="col-lg-4">
+          <div class="card border-0 shadow-sm rounded-4 p-4 h-100 bg-white">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+              <span class="badge bg-success-subtle text-success fs-5 p-2 rounded-circle d-flex align-items-center justify-content-center" style="width:40px;height:40px;">1</span>
+              <i class="bi bi-phone text-muted fs-3"></i>
+            </div>
+            <h5 class="fw-bold">Masyarakat Melaporkan</h5>
+            <p class="text-muted small mb-3">Warga memotret tumpukan sampah, memilih kategori jenis sampah, memilih kecamatan serta desa di Kab. Pesawaran, dan menyertakan petunjuk patokan lokasi.</p>
+            <div class="mt-auto">
+              <span class="badge-eco badge-menunggu">Status: Menunggu Verifikasi</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-4">
+          <div class="card border-0 shadow-sm rounded-4 p-4 h-100 bg-white">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+              <span class="badge bg-primary-subtle text-primary fs-5 p-2 rounded-circle d-flex align-items-center justify-content-center" style="width:40px;height:40px;">2</span>
+              <i class="bi bi-shield-check text-muted fs-3"></i>
+            </div>
+            <h5 class="fw-bold">Admin Verifikasi & Tugas</h5>
+            <p class="text-muted small mb-3">Admin DLH memeriksa kevalidan data, menyetujui laporan, lalu menugaskan petugas kebersihan yang bertanggung jawab di zonasi wilayah tersebut.</p>
+            <div class="mt-auto">
+              <span class="badge-eco badge-ditugaskan">Status: Terverifikasi & Ditugaskan</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-4">
+          <div class="card border-0 shadow-sm rounded-4 p-4 h-100 bg-white">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+              <span class="badge bg-warning-subtle text-warning fs-5 p-2 rounded-circle d-flex align-items-center justify-content-center" style="width:40px;height:40px;">3</span>
+              <i class="bi bi-check2-circle text-muted fs-3"></i>
+            </div>
+            <h5 class="fw-bold">Penanganan & Bukti Tuntas</h5>
+            <p class="text-muted small mb-3">Petugas mengangkut sampah dengan armada truk/roda tiga, mengambil foto hasil pembersihan, lalu menyelesaikan tugas. Warga dapat melihat bukti foto di riwayat.</p>
+            <div class="mt-auto">
+              <span class="badge-eco badge-selesai">Status: Selesai Bersih</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Fitur Unggulan -->
+  <section class="py-5 bg-white" id="fitur">
+    <div class="container py-4">
+      <div class="row align-items-center g-5">
+        <div class="col-lg-6">
+          <h6 class="text-success fw-bold text-uppercase">Fitur Sistem</h6>
+          <h2 class="fw-bold text-dark mb-4">Fitur Lengkap untuk Tiga Peran Pengguna</h2>
+          
+          <div class="d-flex gap-3 mb-4">
+            <div class="bg-success text-white rounded-3 p-3 h-auto d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+              <i class="bi bi-people-fill fs-5"></i>
+            </div>
+            <div>
+              <h6 class="fw-bold mb-1">Masyarakat Mandiri</h6>
+              <p class="text-muted small mb-0">Form pelaporan intuitif, upload foto kondisi sampah dengan preview gambar, pantauan riwayat status real-time, dan pembatalan sebelum verifikasi.</p>
+            </div>
+          </div>
+
+          <div class="d-flex gap-3 mb-4">
+            <div class="bg-primary text-white rounded-3 p-3 h-auto d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+              <i class="bi bi-truck fs-5"></i>
+            </div>
+            <div>
+              <h6 class="fw-bold mb-1">Petugas Lapangan</h6>
+              <p class="text-muted small mb-0">Akses daftar penugasan khusus, informasi detail lokasi dan jenis sampah, status pekerjaan, dan unggah foto dokumentasi hasil penanganan.</p>
+            </div>
+          </div>
+
+          <div class="d-flex gap-3">
+            <div class="bg-dark text-white rounded-3 p-3 h-auto d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+              <i class="bi bi-graph-up-arrow fs-5"></i>
+            </div>
+            <div>
+              <h6 class="fw-bold mb-1">Pusat Kendali Admin</h6>
+              <p class="text-muted small mb-0">Verifikasi laporan, opsi tolak dengan alasan wajib, penugasan armada, visualisasi grafik Chart.js, filter wilayah, serta rekapitulasi data.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-6">
+          <div class="p-4 bg-light rounded-4 border shadow-sm">
+            <h5 class="fw-bold mb-3 d-flex align-items-center justify-content-between">
+              <span>Sebaran Laporan per Kecamatan</span>
+              <span class="badge bg-success small">Pesawaran</span>
+            </h5>
+            <div style="height: 280px;">
+              <canvas id="landingDistrictChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Wilayah Layanan -->
+  <section class="py-5 bg-light" id="wilayah">
+    <div class="container py-4">
+      <div class="text-center mb-5">
+        <h6 class="text-success fw-bold text-uppercase">Cakupan Simulasi</h6>
+        <h2 class="fw-bold text-dark">Wilayah Kabupaten Pesawaran</h2>
+        <p class="text-muted">Mencakup 11 Kecamatan dan seluruh desa terkait dalam database simulasi</p>
+      </div>
+
+      <div class="row row-cols-2 row-cols-md-4 g-3" id="wilayahGrid">
+        <!-- Injected via JS -->
+      </div>
+    </div>
+  </section>
+
+  <!-- Call to action -->
+  <section class="py-5 text-white" style="background: linear-gradient(135deg, var(--primary-green) 0%, var(--secondary-teal) 100%);">
+    <div class="container py-4 text-center">
+      <h2 class="fw-bold mb-3">Siap Mencoba Simulasi Sistem EcoTrack?</h2>
+      <p class="lead opacity-90 mb-4 max-w-600 mx-auto fs-6">
+        Masuk dengan akun demo untuk mencoba seluruh alur secara interaktif mulai dari masyarakat membuat laporan hingga petugas menyelesaikan pembersihan.
+      </p>
+      <div class="d-flex justify-content-center gap-3 flex-wrap">
+        <a href="login.html" class="btn btn-light text-success fw-bold px-4 py-2">
+          Buka Halaman Login Demo
+        </a>
+        <a href="register.html" class="btn btn-outline-light fw-bold px-4 py-2">
+          Daftar Sebagai Warga Baru
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="py-4 bg-white border-top">
+    <div class="container d-flex flex-wrap justify-content-between align-items-center gap-3">
+      <div class="d-flex align-items-center gap-2">
+        <i class="bi bi-recycle text-success fs-4"></i>
+        <span class="fw-bold text-dark">EcoTrack Pesawaran</span>
+        <span class="text-muted small">| Prototipe Simulasi Web Sistem Pengelolaan Sampah</span>
+      </div>
+      <div class="text-muted small">
+        &copy; 2026 EcoTrack. Dikembangkan untuk simulasi monitoring persampahan berbasis web.
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+  <script src="assets/js/data-seed.js"></script>
+  <script src="assets/js/storage.js"></script>
+  <script src="assets/js/auth.js"></script>
+  <script src="assets/js/app.js"></script>
+
+  <script>
+    // Initialize simulation banner
+    App.renderSimulationBanner();
+
+    // Check auth status for navbar
+    const currentUser = Auth.getCurrentUser();
+    if (currentUser) {
+      const targetUrl = Auth.getRedirectPathForRole(currentUser.role, 0);
+      document.getElementById('navAuthArea').innerHTML = `
+        <span class="small text-muted me-2">Halo, <strong>${App.escapeHtml(currentUser.name)}</strong></span>
+        <a href="${targetUrl}" class="btn btn-primary-eco btn-sm px-3">Buka Dashboard</a>
+        <button class="btn btn-outline-danger btn-sm" onclick="Auth.logout('index.html')">Logout</button>
+      `;
+    }
+
+    // Populate Hero Stats
+    const stats = StorageManager.getStats();
+    document.getElementById('heroStatCompleted').textContent = stats.selesai + ' Lokasi';
+    document.getElementById('heroStatProcessing').textContent = (stats.penanganan + stats.ditugaskan) + ' Laporan';
+    document.getElementById('heroStatWaiting').textContent = stats.menunggu + ' Laporan Baru';
+
+    // Populate Wilayah Grid
+    const wilayah = StorageManager.getWilayah();
+    const wilayahGrid = document.getElementById('wilayahGrid');
+    const reports = StorageManager.getReports();
+
+    Object.keys(wilayah).forEach(dist => {
+      const count = reports.filter(r => r.district === dist).length;
+      const col = document.createElement('div');
+      col.className = 'col';
+      col.innerHTML = `
+        <div class="card p-3 border-0 shadow-sm bg-white rounded-3 h-100">
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <h6 class="fw-bold text-dark mb-0">${dist}</h6>
+            <span class="badge bg-success-subtle text-success">${count} Laporan</span>
+          </div>
+          <small class="text-muted">${wilayah[dist].length} Desa/Kelurahan</small>
+        </div>
+      `;
+      wilayahGrid.appendChild(col);
+    });
+
+    // Landing Chart
+    const ctx = document.getElementById('landingDistrictChart');
+    if (ctx) {
+      const labels = Object.keys(wilayah).slice(0, 7);
+      const dataCounts = labels.map(l => reports.filter(r => r.district === l).length);
+
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Jumlah Laporan Masuk',
+            data: dataCounts,
+            backgroundColor: '#00873A',
+            borderRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: { precision: 0 }
+            }
+          }
+        }
+      });
+    }
+
+    // Quick Login Helper
+    function quickLogin(email, password) {
+      try {
+        const user = Auth.login(email, password);
+        App.toast(`Berhasil masuk sebagai ${user.name} (${user.role})`, 'success');
+        setTimeout(() => {
+          window.location.href = Auth.getRedirectPathForRole(user.role, 0);
+        }, 500);
+      } catch (err) {
+        App.toast(err.message, 'danger');
+      }
+    }
+  </script>
+</body>
+</html>
+

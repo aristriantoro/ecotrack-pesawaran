@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Data Seluruh Laporan — EcoTrack Kab. Pesawaran</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap">
+  <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+
+  <div id="simBannerContainer"></div>
+
+  <div class="dashboard-wrapper">
+    <aside class="sidebar"></aside>
+
+    <div class="main-content">
+      <header class="topbar"></header>
+
+      <main class="content-body">
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-4">
+          <div>
+            <h4 class="fw-bold text-dark mb-1">Data Master Laporan Sampah</h4>
+            <p class="text-muted small mb-0">Kelola dan pantau seluruh laporan permasalahan sampah masyarakat di 11 Kecamatan Kab. Pesawaran.</p>
+          </div>
+        </div>
+
+        <!-- Filter Bar -->
+        <div class="card border-0 shadow-sm rounded-4 bg-white p-3 mb-4">
+          <div class="row g-2 align-items-center">
+            <div class="col-md-4">
+              <div class="input-group">
+                <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-search"></i></span>
+                <input type="text" class="form-control bg-light border-start-0" id="adminSearchInput" placeholder="Cari ID, pelapor, judul, alamat..." oninput="filterAdminReports()">
+              </div>
+            </div>
+            <div class="col-md-3">
+              <select class="form-select bg-light" id="adminStatusFilter" onchange="filterAdminReports()">
+                <option value="">Semua Status</option>
+                <option value="Menunggu Verifikasi">Menunggu Verifikasi</option>
+                <option value="Terverifikasi">Terverifikasi</option>
+                <option value="Ditugaskan">Ditugaskan</option>
+                <option value="Dalam Penanganan">Dalam Penanganan</option>
+                <option value="Selesai">Selesai</option>
+                <option value="Ditolak">Ditolak</option>
+                <option value="Dibatalkan">Dibatalkan</option>
+              </select>
+            </div>
+            <div class="col-md-3">
+              <select class="form-select bg-light" id="adminDistrictFilter" onchange="filterAdminReports()">
+                <option value="">Semua Kecamatan</option>
+              </select>
+            </div>
+            <div class="col-md-2 text-md-end">
+              <span class="small text-muted" id="adminReportCount">0 Laporan</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Master Table -->
+        <div class="card border-0 shadow-sm rounded-4 overflow-hidden bg-white">
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+              <thead class="table-light">
+                <tr class="small text-muted text-uppercase">
+                  <th class="ps-4">No. Laporan</th>
+                  <th>Tanggal</th>
+                  <th>Pelapor</th>
+                  <th>Judul Permasalahan</th>
+                  <th>Kategori</th>
+                  <th>Kecamatan / Desa</th>
+                  <th>Status</th>
+                  <th>Petugas Lapangan</th>
+                  <th class="text-end pe-4">Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="adminReportsMasterTable"></tbody>
+            </table>
+          </div>
+
+          <div id="emptyAdminReportsState" class="text-center py-5 d-none">
+            <i class="bi bi-inbox fs-1 text-muted mb-2 d-block"></i>
+            <h6 class="fw-bold text-dark">Laporan Tidak Ditemukan</h6>
+            <p class="text-muted small">Tidak ada data laporan yang cocok dengan kriteria pencarian Anda.</p>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- Modal Detail Laporan untuk Admin -->
+  <div class="modal fade" id="adminReportDetailModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content border-0 shadow">
+        <div class="modal-header border-bottom">
+          <div class="d-flex align-items-center gap-2">
+            <h5 class="modal-title fw-bold text-dark" id="modalReportId">Detail Laporan</h5>
+            <div id="modalReportBadge"></div>
+          </div>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body p-4" id="modalReportBody">
+          <!-- Injected via JS -->
+        </div>
+        <div class="modal-footer border-top">
+          <button type="button" class="btn btn-light" data-bs-dismiss="modal">Tutup</button>
+          <div id="modalActionButtons" class="d-inline-flex gap-2"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="../assets/js/data-seed.js"></script>
+  <script src="../assets/js/storage.js"></script>
+  <script src="../assets/js/auth.js"></script>
+  <script src="../assets/js/app.js"></script>
+
+  <script>
+    const user = Auth.requireAuth(['admin'], 1);
+    let allReports = [];
+
+    if (user) {
+      App.renderSimulationBanner();
+      App.renderSidebar('admin', 'reports');
+      App.renderTopbar('Data Laporan Sampah', [
+        { label: 'EcoTrack', href: '../index.html' },
+        { label: 'Admin', href: 'dashboard.html' },
+        { label: 'Data Laporan' }
+      ]);
+
+      // Populate District Filter
+      const distFilter = document.getElementById('adminDistrictFilter');
+      const wilayah = StorageManager.getWilayah();
+      Object.keys(wilayah).forEach(k => {
+        distFilter.innerHTML += `<option value="${k}">${k}</option>`;
+      });
+
+      allReports = StorageManager.getReports();
+      filterAdminReports();
+    }
+
+    function filterAdminReports() {
+      const keyword = (document.getElementById('adminSearchInput').value || '').toLowerCase().trim();
+      const status = document.getElementById('adminStatusFilter').value;
+      const district = document.getElementById('adminDistrictFilter').value;
+
+      const filtered = allReports.filter(r => {
+        const matchesKeyword = !keyword ||
+          r.id.toLowerCase().includes(keyword) ||
+          r.title.toLowerCase().includes(keyword) ||
+          r.user_name.toLowerCase().includes(keyword) ||
+          r.address.toLowerCase().includes(keyword) ||
+          r.village.toLowerCase().includes(keyword);
+
+        const matchesStatus = !status || r.status === status;
+        const matchesDistrict = !district || r.district === district;
+        return matchesKeyword && matchesStatus && matchesDistrict;
+      });
+
+      document.getElementById('adminReportCount').textContent = `Menampilkan ${filtered.length} dari ${allReports.length} laporan`;
+
+      const tbody = document.getElementById('adminReportsMasterTable');
+      const emptyState = document.getElementById('emptyAdminReportsState');
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = '';
+        emptyState.classList.remove('d-none');
+      } else {
+        emptyState.classList.add('d-none');
+        tbody.innerHTML = filtered.map(r => `
+          <tr>
+            <td class="ps-4 fw-bold text-dark">${r.id}</td>
+            <td class="small text-muted">${App.formatDate(r.created_at)}</td>
+            <td class="small">
+              <span class="fw-semibold text-dark">${App.escapeHtml(r.user_name)}</span>
+              <small class="text-muted d-block">${r.user_phone || '-'}</small>
+            </td>
+            <td>
+              <div class="fw-semibold text-dark text-truncate" style="max-width: 220px;">${App.escapeHtml(r.title)}</div>
+              <small class="text-muted text-truncate d-block" style="max-width: 220px;">${App.escapeHtml(r.address)}</small>
+            </td>
+            <td><span class="badge bg-light text-dark border">${App.escapeHtml(r.category_name)}</span></td>
+            <td class="small text-dark">${App.escapeHtml(r.district)}, ${App.escapeHtml(r.village)}</td>
+            <td>${App.getStatusBadge(r.status)}</td>
+            <td class="small">
+              ${r.assigned_officer_name ? `
+                <span class="text-dark fw-semibold"><i class="bi bi-person-check me-1 text-success"></i>${App.escapeHtml(r.assigned_officer_name)}</span>
+              ` : '<span class="text-muted">Belum ditugaskan</span>'}
+            </td>
+            <td class="text-end pe-4">
+              <button type="button" class="btn btn-sm btn-outline-eco" onclick="openDetailModal('${r.id}')">
+                <i class="bi bi-eye"></i> Detail
+              </button>
+            </td>
+          </tr>
+        `).join('');
+      }
+    }
+
+    function openDetailModal(id) {
+      const r = StorageManager.getReportById(id);
+      if (!r) return;
+
+      document.getElementById('modalReportId').textContent = r.id;
+      document.getElementById('modalReportBadge').innerHTML = App.getStatusBadge(r.status);
+
+      let actionHtml = '';
+      if (r.status === 'Menunggu Verifikasi') {
+        actionHtml = `
+          <a href="verification.html?id=${r.id}" class="btn btn-warning text-dark fw-semibold">
+            <i class="bi bi-shield-check me-1"></i> Proses Verifikasi
+          </a>
+        `;
+      } else if (r.status === 'Terverifikasi') {
+        actionHtml = `
+          <a href="assignments.html?id=${r.id}" class="btn btn-primary-eco">
+            <i class="bi bi-person-plus me-1"></i> Tugaskan Petugas
+          </a>
+        `;
+      }
+
+      document.getElementById('modalActionButtons').innerHTML = actionHtml;
+
+      const body = document.getElementById('modalReportBody');
+      body.innerHTML = `
+        <div class="row g-3 mb-3">
+          <div class="col-md-6">
+            <small class="text-muted d-block">Judul Laporan:</small>
+            <strong class="text-dark fs-6">${App.escapeHtml(r.title)}</strong>
+          </div>
+          <div class="col-md-6">
+            <small class="text-muted d-block">Kategori Sampah:</small>
+            <span class="badge bg-light text-dark border">${App.escapeHtml(r.category_name)}</span>
+          </div>
+        </div>
+
+        <div class="row g-3 mb-3">
+          <div class="col-md-6">
+            <small class="text-muted d-block">Pelapor:</small>
+            <span class="text-dark fw-semibold">${App.escapeHtml(r.user_name)} (${r.user_phone || '-'})</span>
+          </div>
+          <div class="col-md-6">
+            <small class="text-muted d-block">Kecamatan & Desa:</small>
+            <span class="text-dark">${App.escapeHtml(r.district)}, ${App.escapeHtml(r.village)}</span>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <small class="text-muted d-block">Alamat Lengkap & Patokan:</small>
+          <div class="p-2 bg-light rounded text-dark small">${App.escapeHtml(r.address)}</div>
+        </div>
+
+        <div class="mb-3">
+          <small class="text-muted d-block">Deskripsi:</small>
+          <div class="p-2 bg-light rounded text-dark small" style="white-space: pre-wrap;">${App.escapeHtml(r.description)}</div>
+        </div>
+
+        ${r.status === 'Ditolak' ? `
+          <div class="alert alert-danger p-3 mb-3 small">
+            <strong>Alasan Penolakan:</strong> ${App.escapeHtml(r.rejection_reason || '-')}
+          </div>
+        ` : ''}
+
+        <div class="mb-3">
+          <small class="text-muted d-block mb-1">Foto Laporan Kondisi Sampah:</small>
+          <div class="row g-2">
+            ${(r.photos || []).map(p => `
+              <div class="col-6">
+                <img src="${p}" class="img-fluid rounded border shadow-sm w-100" style="max-height: 200px; object-fit: cover;">
+              </div>
+            `).join('')}
+          </div>
+        </div>
+
+        ${r.status === 'Selesai' ? `
+          <div class="mb-3 p-3 bg-light rounded-3 border border-success">
+            <h6 class="fw-bold text-success mb-2"><i class="bi bi-patch-check-fill me-1"></i> Bukti Penanganan Tuntas Petugas</h6>
+            <div class="row g-2 mb-2">
+              ${(r.completion_photos || []).map(p => `
+                <div class="col-6">
+                  <img src="${p}" class="img-fluid rounded border shadow-sm w-100" style="max-height: 200px; object-fit: cover;">
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        ` : ''}
+
+        <div class="mt-4">
+          <h6 class="fw-bold text-dark mb-2">Riwayat Timeline Perubahan Status:</h6>
+          <div class="timeline">
+            ${(r.timeline || []).map(ev => `
+              <div class="timeline-item">
+                <div class="timeline-badge done"></div>
+                <div class="timeline-content">
+                  <div class="d-flex justify-content-between small fw-bold">
+                    <span>${ev.status}</span>
+                    <span class="text-muted">${App.formatDate(ev.timestamp)}</span>
+                  </div>
+                  <p class="small text-muted mb-0">${App.escapeHtml(ev.notes)}</p>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+
+      const bsModal = new bootstrap.Modal(document.getElementById('adminReportDetailModal'));
+      bsModal.show();
+    }
+  </script>
+</body>
+</html>
+
