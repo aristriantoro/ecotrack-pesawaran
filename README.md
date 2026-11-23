@@ -124,10 +124,10 @@ Langkah-langkah untuk mengunggah project EcoTrack ke GitHub:
    - Klik **Create repository**.
 
 3. **Hubungkan & Push ke GitHub:**
-   Jalankan perintah berikut di terminal lokal Anda (ganti `<username>` dengan username GitHub Anda):
+   Jalankan perintah berikut di terminal:
    ```bash
    git branch -M main
-   git remote add origin https://github.com/<username>/ecotrack-pesawaran.git
+   git remote add origin https://github.com/aristriantoro/ecotrack-pesawaran.git
    git push -u origin main
    ```
 
